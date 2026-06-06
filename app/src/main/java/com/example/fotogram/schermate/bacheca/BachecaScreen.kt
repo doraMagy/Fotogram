@@ -21,15 +21,11 @@ fun BachecaScreen(
     ) {
         Text("Bacheca")
 
-        Button(
-            onClick = onVaiCreaPost
-        ) {
+        Button( onClick = onVaiCreaPost) {
             Text("Crea post")
         }
 
-        Button(
-            onClick = onVaiProfilo
-        ) {
+        Button(onClick = onVaiProfilo) {
             Text("Profilo")
         }
     }
