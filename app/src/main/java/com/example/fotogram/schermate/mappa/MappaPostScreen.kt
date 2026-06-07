@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 @Composable
 fun MappaPostScreen(
     idPost: String,
-    onTornaIndietro: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -21,11 +20,5 @@ fun MappaPostScreen(
     ) {
         Text("Mappa del post")
         Text("ID post: $idPost")
-
-        Button(
-            onClick = onTornaIndietro
-        ) {
-            Text("Indietro")
-        }
     }
 }

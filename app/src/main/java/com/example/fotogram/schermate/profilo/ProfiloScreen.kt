@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun ProfiloScreen(
-    onTornaBacheca: () -> Unit,
     onModificaProfilo: () -> Unit,
     onApriImmaginePost: (String) -> Unit,
     onApriMappaPost: (String) -> Unit
@@ -21,8 +20,6 @@ fun ProfiloScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Profilo")
-
         Button(
             onClick = onModificaProfilo
         ) {
@@ -43,12 +40,6 @@ fun ProfiloScreen(
             }
         ) {
             Text("Apri mappa mio post")
-        }
-
-        Button(
-            onClick = onTornaBacheca
-        ) {
-            Text("Torna alla bacheca")
         }
     }
 }

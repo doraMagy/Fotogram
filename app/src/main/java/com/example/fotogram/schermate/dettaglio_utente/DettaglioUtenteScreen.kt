@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 @Composable
 fun DettaglioUtenteScreen(
     nomeUtente: String,
-    onTornaIndietro: () -> Unit,
     onApriImmaginePost: (String) -> Unit,
     onApriMappaPost: (String) -> Unit
 ) {
@@ -38,12 +37,6 @@ fun DettaglioUtenteScreen(
             }
         ) {
             Text("Apri mappa post")
-        }
-
-        Button(
-            onClick = onTornaIndietro
-        ) {
-            Text("Indietro")
         }
     }
 }

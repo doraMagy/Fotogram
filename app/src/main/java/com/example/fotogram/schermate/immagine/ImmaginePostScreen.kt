@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 @Composable
 fun ImmaginePostScreen(
     idPost: String,
-    onTornaIndietro: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -21,11 +20,5 @@ fun ImmaginePostScreen(
     ) {
         Text("Immagine post a schermo intero")
         Text("ID post: $idPost")
-
-        Button(
-            onClick = onTornaIndietro
-        ) {
-            Text("Indietro")
-        }
     }
 }

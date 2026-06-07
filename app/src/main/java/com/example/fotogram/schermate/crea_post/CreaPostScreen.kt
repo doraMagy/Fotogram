@@ -28,8 +28,6 @@ fun CreaPostScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Crea post")
-
         OutlinedTextField(
             value = testoPost,
             onValueChange = {

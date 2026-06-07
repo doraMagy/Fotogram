@@ -11,8 +11,6 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun BachecaScreen(
-    onVaiCreaPost: () -> Unit,
-    onVaiProfilo: () -> Unit,
     onApriDettaglioUtente: (String) -> Unit,
     onApriImmaginePost: (String) -> Unit,
     onApriMappaPost: (String) -> Unit
@@ -22,20 +20,6 @@ fun BachecaScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Bacheca")
-
-        Button(
-            onClick = onVaiCreaPost
-        ) {
-            Text("Crea post")
-        }
-
-        Button(
-            onClick = onVaiProfilo
-        ) {
-            Text("Profilo")
-        }
-
         Button(
             onClick = {
                 onApriDettaglioUtente("utente_demo")

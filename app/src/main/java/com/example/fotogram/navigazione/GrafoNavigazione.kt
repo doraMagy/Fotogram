@@ -1,12 +1,19 @@
 package com.example.fotogram.navigazione
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.fotogram.componenti.BarraInferiore
+import com.example.fotogram.componenti.BarraSuperiore
 import com.example.fotogram.schermate.avvio.AvvioScreen
 import com.example.fotogram.schermate.bacheca.BachecaScreen
 import com.example.fotogram.schermate.crea_post.CreaPostScreen
@@ -27,114 +34,168 @@ fun GrafoNavigazione() {
         Navigatore(navController)
     }
 
-    NavHost(
-        navController = navController,
-        startDestination = Schermata.Avvio.route
-    ) {
-        composable(Schermata.Avvio.route) {
-            AvvioScreen(
-                onVaiRegistrazione = navigatore::vaiAllaRegistrazione,
-                onVaiBacheca = navigatore::vaiAllaBacheca
-            )
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val routeCorrente = backStackEntry?.destination?.route
+
+    val mostraBarrePrincipali = routeCorrente in listOf(
+        Schermata.Bacheca.route,
+        Schermata.CreaPost.route,
+        Schermata.Profilo.route
+    )
+
+    val mostraBarraSuperioreSecondaria = routeCorrente in listOf(
+        Schermata.DettaglioUtente.route,
+        Schermata.ImmaginePost.route,
+        Schermata.MappaPost.route,
+        Schermata.SelezionaPosizione.route,
+        Schermata.ModificaProfilo.route
+    )
+
+    val titolo = when (routeCorrente) {
+        Schermata.Bacheca.route -> "Bacheca"
+        Schermata.CreaPost.route -> "Crea post"
+        Schermata.Profilo.route -> "Profilo"
+        Schermata.DettaglioUtente.route -> "Dettaglio utente"
+        Schermata.ImmaginePost.route -> "Immagine"
+        Schermata.MappaPost.route -> "Mappa"
+        Schermata.SelezionaPosizione.route -> "Seleziona posizione"
+        Schermata.ModificaProfilo.route -> "Modifica profilo"
+        else -> "Fotogram"
+    }
+
+    Scaffold(
+        topBar = {
+            if (mostraBarrePrincipali) {
+                BarraSuperiore(
+                    titolo = titolo,
+                    mostraIndietro = false,
+                    onIndietro = {}
+                )
+            }
+
+            if (mostraBarraSuperioreSecondaria) {
+                BarraSuperiore(
+                    titolo = titolo,
+                    mostraIndietro = true,
+                    onIndietro = navigatore::tornaIndietro
+                )
+            }
+        },
+        bottomBar = {
+            if (mostraBarrePrincipali) {
+                BarraInferiore(
+                    schermataCorrente = routeCorrente,
+                    onVaiBacheca = navigatore::vaiAllaBacheca,
+                    onVaiCreaPost = navigatore::vaiACreaPost,
+                    onVaiProfilo = navigatore::vaiAlProfilo
+                )
+            }
         }
+    ) { paddingValues ->
 
-        composable(Schermata.Registrazione.route) {
-            RegistrazioneScreen(
-                onRegistrazioneCompletata = navigatore::vaiAllaBacheca
-            )
-        }
+        NavHost(
+            navController = navController,
+            startDestination = Schermata.Avvio.route,
+            modifier = Modifier.padding(paddingValues)
+        ) {
+            composable(Schermata.Avvio.route) {
+                AvvioScreen(
+                    onVaiRegistrazione = navigatore::vaiAllaRegistrazione,
+                    onVaiBacheca = navigatore::vaiAllaBacheca
+                )
+            }
 
-        composable(Schermata.Bacheca.route) {
-            BachecaScreen(
-                onVaiCreaPost = navigatore::vaiACreaPost,
-                onVaiProfilo = navigatore::vaiAlProfilo,
-                onApriDettaglioUtente = navigatore::vaiADettaglioUtente,
-                onApriImmaginePost = navigatore::vaiAImmaginePost,
-                onApriMappaPost = navigatore::vaiAMappaPost
-            )
-        }
+            composable(Schermata.Registrazione.route) {
+                RegistrazioneScreen(
+                    onRegistrazioneCompletata = navigatore::vaiAllaBacheca
+                )
+            }
 
-        composable(Schermata.CreaPost.route) {
-            CreaPostScreen(
-                onTornaBacheca = navigatore::vaiAllaBacheca,
-                onSelezionaPosizione = navigatore::vaiASelezionaPosizione
-            )
-        }
+            composable(Schermata.Bacheca.route) {
+                BachecaScreen(
+                    onApriDettaglioUtente = navigatore::vaiADettaglioUtente,
+                    onApriImmaginePost = navigatore::vaiAImmaginePost,
+                    onApriMappaPost = navigatore::vaiAMappaPost
+                )
+            }
 
-        composable(Schermata.Profilo.route) {
-            ProfiloScreen(
-                onTornaBacheca = navigatore::vaiAllaBacheca,
-                onModificaProfilo = navigatore::vaiAModificaProfilo,
-                onApriImmaginePost = navigatore::vaiAImmaginePost,
-                onApriMappaPost = navigatore::vaiAMappaPost
-            )
-        }
+            composable(Schermata.CreaPost.route) {
+                CreaPostScreen(
+                    onTornaBacheca = navigatore::vaiAllaBacheca,
+                    onSelezionaPosizione = navigatore::vaiASelezionaPosizione
+                )
+            }
 
-        composable(
-            route = Schermata.DettaglioUtente.route,
-            arguments = listOf(
-                navArgument("nomeUtente") {
-                    type = NavType.StringType
-                }
-            )
-        ) { backStackEntry ->
+            composable(Schermata.Profilo.route) {
+                ProfiloScreen(
+                    onModificaProfilo = navigatore::vaiAModificaProfilo,
+                    onApriImmaginePost = navigatore::vaiAImmaginePost,
+                    onApriMappaPost = navigatore::vaiAMappaPost
+                )
+            }
 
-            val nomeUtente = backStackEntry.arguments?.getString("nomeUtente") ?: ""
+            composable(
+                route = Schermata.DettaglioUtente.route,
+                arguments = listOf(
+                    navArgument("nomeUtente") {
+                        type = NavType.StringType
+                    }
+                )
+            ) { backStackEntry ->
 
-            DettaglioUtenteScreen(
-                nomeUtente = nomeUtente,
-                onTornaIndietro = navigatore::tornaIndietro,
-                onApriImmaginePost = navigatore::vaiAImmaginePost,
-                onApriMappaPost = navigatore::vaiAMappaPost
-            )
-        }
+                val nomeUtente = backStackEntry.arguments?.getString("nomeUtente") ?: ""
 
-        composable(
-            route = Schermata.ImmaginePost.route,
-            arguments = listOf(
-                navArgument("idPost") {
-                    type = NavType.StringType
-                }
-            )
-        ) { backStackEntry ->
+                DettaglioUtenteScreen(
+                    nomeUtente = nomeUtente,
+                    onApriImmaginePost = navigatore::vaiAImmaginePost,
+                    onApriMappaPost = navigatore::vaiAMappaPost
+                )
+            }
 
-            val idPost = backStackEntry.arguments?.getString("idPost") ?: ""
+            composable(
+                route = Schermata.ImmaginePost.route,
+                arguments = listOf(
+                    navArgument("idPost") {
+                        type = NavType.StringType
+                    }
+                )
+            ) { backStackEntry ->
 
-            ImmaginePostScreen(
-                idPost = idPost,
-                onTornaIndietro = navigatore::tornaIndietro
-            )
-        }
+                val idPost = backStackEntry.arguments?.getString("idPost") ?: ""
 
-        composable(
-            route = Schermata.MappaPost.route,
-            arguments = listOf(
-                navArgument("idPost") {
-                    type = NavType.StringType
-                }
-            )
-        ) { backStackEntry ->
+                ImmaginePostScreen(
+                    idPost = idPost,
+                )
+            }
 
-            val idPost = backStackEntry.arguments?.getString("idPost") ?: ""
+            composable(
+                route = Schermata.MappaPost.route,
+                arguments = listOf(
+                    navArgument("idPost") {
+                        type = NavType.StringType
+                    }
+                )
+            ) { backStackEntry ->
 
-            MappaPostScreen(
-                idPost = idPost,
-                onTornaIndietro = navigatore::tornaIndietro
-            )
-        }
+                val idPost = backStackEntry.arguments?.getString("idPost") ?: ""
 
-        composable(Schermata.SelezionaPosizione.route) {
-            SelezionaPosizioneScreen(
-                onConfermaPosizione = navigatore::tornaIndietro,
-                onAnnulla = navigatore::tornaIndietro
-            )
-        }
+                MappaPostScreen(
+                    idPost = idPost,
+                )
+            }
 
-        composable(Schermata.ModificaProfilo.route) {
-            ModificaProfiloScreen(
-                onSalva = navigatore::tornaIndietro,
-                onAnnulla = navigatore::tornaIndietro
-            )
+            composable(Schermata.SelezionaPosizione.route) {
+                SelezionaPosizioneScreen(
+                    onConfermaPosizione = navigatore::tornaIndietro,
+                    onAnnulla = navigatore::tornaIndietro
+                )
+            }
+
+            composable(Schermata.ModificaProfilo.route) {
+                ModificaProfiloScreen(
+                    onSalva = navigatore::tornaIndietro
+                )
+            }
         }
     }
 }

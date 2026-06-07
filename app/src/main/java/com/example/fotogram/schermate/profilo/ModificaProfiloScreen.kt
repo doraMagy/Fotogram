@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 @Composable
 fun ModificaProfiloScreen(
     onSalva: () -> Unit,
-    onAnnulla: () -> Unit
 ) {
     var nomeUtente by remember {
         mutableStateOf("")
@@ -32,8 +31,6 @@ fun ModificaProfiloScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Modifica profilo")
-
         OutlinedTextField(
             value = nomeUtente,
             onValueChange = {
@@ -58,12 +55,6 @@ fun ModificaProfiloScreen(
             onClick = onSalva
         ) {
             Text("Salva")
-        }
-
-        Button(
-            onClick = onAnnulla
-        ) {
-            Text("Annulla")
         }
     }
 }
