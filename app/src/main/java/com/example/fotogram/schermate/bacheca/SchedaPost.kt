@@ -29,7 +29,9 @@ fun SchedaPost(
     post: Post,
     onApriDettaglioUtente: (String) -> Unit,
     onApriImmaginePost: (String) -> Unit,
-    onApriMappaPost: (String) -> Unit
+    onApriMappaPost: (String) -> Unit,
+    mostraAutoreCliccabile: Boolean = true,
+    mostraBadge: Boolean = true
 ) {
     Card(
         modifier = Modifier
@@ -51,21 +53,27 @@ fun SchedaPost(
                 Text(
                     text = post.nomeAutore,
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.clickable {
-                        onApriDettaglioUtente(post.nomeAutore)
+                    modifier = if (mostraAutoreCliccabile) {
+                        Modifier.clickable {
+                            onApriDettaglioUtente(post.nomeAutore)
+                        }
+                    } else {
+                        Modifier
                     }
                 )
 
-                AssistChip(
-                    onClick = {},
-                    label = {
-                        if (post.seguito) {
-                            Text("Seguito")
-                        } else {
-                            Text("Scoperta")
+                if (mostraBadge) {
+                    AssistChip(
+                        onClick = {},
+                        label = {
+                            if (post.seguito) {
+                                Text("Seguito")
+                            } else {
+                                Text("Scoperta")
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
 
             Spacer(

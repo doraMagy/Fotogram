@@ -51,6 +51,8 @@ fun ModificaProfiloScreen(
             }
         )
 
+        Text(text="data di nascita")
+
         Button(
             onClick = onSalva
         ) {

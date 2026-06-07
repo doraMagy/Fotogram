@@ -12,12 +12,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,7 +33,7 @@ import com.example.fotogram.schermate.bacheca.SchedaPost
 fun ProfiloScreen(
     onModificaProfilo: () -> Unit,
     onApriImmaginePost: (String) -> Unit,
-    onApriMappaPost: (String) -> Unit
+    onApriMappaPost: (String) -> Unit,
 ) {
     val utenteDemo = Utente(
         nomeUtente = "utente_demo",
@@ -101,7 +102,9 @@ fun ProfiloScreen(
                     // Nel profilo personale non serve aprire il dettaglio utente.
                 },
                 onApriImmaginePost = onApriImmaginePost,
-                onApriMappaPost = onApriMappaPost
+                onApriMappaPost = onApriMappaPost,
+                mostraAutoreCliccabile = false,
+                mostraBadge = false
             )
         }
     }
@@ -112,18 +115,18 @@ fun IntestazioneProfilo(
     utente: Utente,
     onModificaProfilo: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth()
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(96.dp)
+                    .size(92.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.secondaryContainer),
                 contentAlignment = Alignment.Center
@@ -132,65 +135,70 @@ fun IntestazioneProfilo(
             }
 
             Spacer(
-                modifier = Modifier.height(12.dp)
+                modifier = Modifier.width(20.dp)
             )
 
-            Text(
-                text = utente.nomeUtente,
-                style = MaterialTheme.typography.titleLarge
-            )
-
-            Spacer(
-                modifier = Modifier.height(4.dp)
-            )
-
-            Text(
-                text = utente.bio,
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Spacer(
-                modifier = Modifier.height(4.dp)
-            )
-
-            Text(
-                text = "Data di nascita: ${utente.dataNascita}",
-                style = MaterialTheme.typography.bodySmall
-            )
-
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+            Column(
+                modifier = Modifier.weight(1f)
             ) {
-                StatisticaProfilo(
-                    valore = utente.numeroPost,
-                    etichetta = "Post"
+                Text(
+                    text = utente.nomeUtente,
+                    style = MaterialTheme.typography.titleMedium
                 )
 
-                StatisticaProfilo(
-                    valore = utente.numeroFollower,
-                    etichetta = "Follower"
+                Spacer(
+                    modifier = Modifier.height(12.dp)
                 )
 
-                StatisticaProfilo(
-                    valore = utente.numeroFollowing,
-                    etichetta = "Following"
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    StatisticaProfilo(
+                        valore = utente.numeroPost,
+                        etichetta = "Post"
+                    )
+
+                    StatisticaProfilo(
+                        valore = utente.numeroFollower,
+                        etichetta = "Follower"
+                    )
+
+                    StatisticaProfilo(
+                        valore = utente.numeroFollowing,
+                        etichetta = "Following"
+                    )
+                }
             }
+        }
 
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
+        Spacer(
+            modifier = Modifier.height(12.dp)
+        )
 
-            Button(
-                onClick = onModificaProfilo
-            ) {
-                Text("Modifica profilo")
-            }
+        Text(
+            text = utente.bio,
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Spacer(
+            modifier = Modifier.height(4.dp)
+        )
+
+        Text(
+            text = "Data di nascita: ${utente.dataNascita}",
+            style = MaterialTheme.typography.bodySmall
+        )
+
+        Spacer(
+            modifier = Modifier.height(12.dp)
+        )
+
+        OutlinedButton(
+            onClick = onModificaProfilo,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Modifica profilo")
         }
     }
 }

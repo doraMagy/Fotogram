@@ -25,7 +25,7 @@ fun RegistrazioneScreen(onRegistrazioneCompletata: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Registrazione")
+        Text("FOTOGRAM")
 
         OutlinedTextField(
             value = nomeUtente,
@@ -33,9 +33,11 @@ fun RegistrazioneScreen(onRegistrazioneCompletata: () -> Unit) {
                 nomeUtente = it
             },
             label = {
-                Text("Nome utente")
+                Text("Username")
             }
         )
+
+        Text("Qual'è il tuo aspetto? img placeholder")
 
         Button(
             onClick = onRegistrazioneCompletata
