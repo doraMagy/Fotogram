@@ -12,7 +12,10 @@ import androidx.compose.ui.Modifier
 @Composable
 fun BachecaScreen(
     onVaiCreaPost: () -> Unit,
-    onVaiProfilo: () -> Unit
+    onVaiProfilo: () -> Unit,
+    onApriDettaglioUtente: (String) -> Unit,
+    onApriImmaginePost: (String) -> Unit,
+    onApriMappaPost: (String) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -21,12 +24,40 @@ fun BachecaScreen(
     ) {
         Text("Bacheca")
 
-        Button( onClick = onVaiCreaPost) {
+        Button(
+            onClick = onVaiCreaPost
+        ) {
             Text("Crea post")
         }
 
-        Button(onClick = onVaiProfilo) {
+        Button(
+            onClick = onVaiProfilo
+        ) {
             Text("Profilo")
+        }
+
+        Button(
+            onClick = {
+                onApriDettaglioUtente("utente_demo")
+            }
+        ) {
+            Text("Apri dettaglio utente")
+        }
+
+        Button(
+            onClick = {
+                onApriImmaginePost("post_1")
+            }
+        ) {
+            Text("Apri immagine post")
+        }
+
+        Button(
+            onClick = {
+                onApriMappaPost("post_1")
+            }
+        ) {
+            Text("Apri mappa post")
         }
     }
 }

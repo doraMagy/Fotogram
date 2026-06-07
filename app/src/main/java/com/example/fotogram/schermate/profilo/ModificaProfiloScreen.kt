@@ -1,4 +1,4 @@
-package com.example.fotogram.schermate.crea_post
+package com.example.fotogram.schermate.profilo
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,11 +15,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun CreaPostScreen(
-    onTornaBacheca: () -> Unit,
-    onSelezionaPosizione: () -> Unit
+fun ModificaProfiloScreen(
+    onSalva: () -> Unit,
+    onAnnulla: () -> Unit
 ) {
-    var testoPost by remember {
+    var nomeUtente by remember {
+        mutableStateOf("")
+    }
+
+    var bio by remember {
         mutableStateOf("")
     }
 
@@ -28,28 +32,38 @@ fun CreaPostScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Crea post")
+        Text("Modifica profilo")
 
         OutlinedTextField(
-            value = testoPost,
+            value = nomeUtente,
             onValueChange = {
-                testoPost = it
+                nomeUtente = it
             },
             label = {
-                Text("Testo del post")
+                Text("Nome utente")
+            }
+        )
+
+        OutlinedTextField(
+            value = bio,
+            onValueChange = {
+                bio = it
+            },
+            label = {
+                Text("Biografia")
             }
         )
 
         Button(
-            onClick = onSelezionaPosizione
+            onClick = onSalva
         ) {
-            Text("Aggiungi posizione")
+            Text("Salva")
         }
 
         Button(
-            onClick = onTornaBacheca
+            onClick = onAnnulla
         ) {
-            Text("Pubblica")
+            Text("Annulla")
         }
     }
 }

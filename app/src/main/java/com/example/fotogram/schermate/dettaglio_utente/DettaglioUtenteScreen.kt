@@ -1,4 +1,4 @@
-package com.example.fotogram.schermate.profilo
+package com.example.fotogram.schermate.dettaglio_utente
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,9 +10,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun ProfiloScreen(
-    onTornaBacheca: () -> Unit,
-    onModificaProfilo: () -> Unit,
+fun DettaglioUtenteScreen(
+    nomeUtente: String,
+    onTornaIndietro: () -> Unit,
     onApriImmaginePost: (String) -> Unit,
     onApriMappaPost: (String) -> Unit
 ) {
@@ -21,34 +21,29 @@ fun ProfiloScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Profilo")
+        Text("Dettaglio utente")
+        Text("Utente: $nomeUtente")
 
         Button(
-            onClick = onModificaProfilo
+            onClick = {
+                onApriImmaginePost("post_utente_1")
+            }
         ) {
-            Text("Modifica profilo")
+            Text("Apri immagine post")
         }
 
         Button(
             onClick = {
-                onApriImmaginePost("mio_post_1")
+                onApriMappaPost("post_utente_1")
             }
         ) {
-            Text("Apri immagine mio post")
+            Text("Apri mappa post")
         }
 
         Button(
-            onClick = {
-                onApriMappaPost("mio_post_1")
-            }
+            onClick = onTornaIndietro
         ) {
-            Text("Apri mappa mio post")
-        }
-
-        Button(
-            onClick = onTornaBacheca
-        ) {
-            Text("Torna alla bacheca")
+            Text("Indietro")
         }
     }
 }
