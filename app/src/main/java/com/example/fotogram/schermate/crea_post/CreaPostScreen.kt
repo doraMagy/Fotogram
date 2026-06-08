@@ -54,6 +54,11 @@ fun CreaPostScreen(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        Text(
+            text = "Immagine del post",
+            style = MaterialTheme.typography.titleSmall
+        )
+
         BoxImmaginePost(
             immagineSelezionata = immagineSelezionata,
             onClick = {
@@ -61,18 +66,10 @@ fun CreaPostScreen(
             }
         )
 
-        OutlinedButton(
-            onClick = {
-                immagineSelezionata = true
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            if (immagineSelezionata) {
-                Text("Cambia immagine")
-            } else {
-                Text("Seleziona immagine")
-            }
-        }
+        Text(
+            text = "Descrizione",
+            style = MaterialTheme.typography.titleSmall
+        )
 
         OutlinedTextField(
             value = testoPost,
@@ -88,13 +85,18 @@ fun CreaPostScreen(
                 Text("Scrivi un messaggio...")
             },
             modifier = Modifier.fillMaxWidth(),
-            minLines = 3,
-            maxLines = 4
+            minLines = 2,
+            maxLines = 3
         )
 
         Text(
             text = "${testoPost.length}/100 caratteri",
             style = MaterialTheme.typography.bodySmall
+        )
+
+        Text(
+            text = "Posizione",
+            style = MaterialTheme.typography.titleSmall
         )
 
         OutlinedButton(
@@ -140,7 +142,7 @@ fun BoxImmaginePost(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(260.dp)
+            .height(180.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .clickable {
