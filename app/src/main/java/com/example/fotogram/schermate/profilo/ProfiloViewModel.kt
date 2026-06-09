@@ -4,10 +4,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.fotogram.model.Post
 import com.example.fotogram.model.Utente
+import com.example.fotogram.sessione.SessioneManager
+import kotlinx.coroutines.launch
 
-class ProfiloViewModel : ViewModel() {
+class ProfiloViewModel(
+    private val sessioneManager: SessioneManager
+) : ViewModel() {
 
     var utente by mutableStateOf(
         Utente(
@@ -50,4 +55,16 @@ class ProfiloViewModel : ViewModel() {
         )
     )
         private set
+
+    //da togliere alla fine
+    var logoutCompletato by mutableStateOf(false)
+        private set
+
+    //da togliere alla fine
+    fun logout() {
+        viewModelScope.launch {
+            sessioneManager.eliminaSessione()
+            logoutCompletato = true
+        }
+    }
 }

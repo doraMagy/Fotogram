@@ -55,5 +55,15 @@ class Navigatore(
     fun tornaIndietro() {
         navController.popBackStack()
     }
+
+    //provvisorio per testing - da togliere alla fine
+    fun vaiAllaRegistrazioneDopoLogout() {
+        navController.navigate(Schermata.Registrazione.route) {
+            popUpTo(0) {
+                inclusive = true
+            }
+        }
+    }
+
 }
 

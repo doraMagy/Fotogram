@@ -15,8 +15,9 @@ class AvvioViewModel(
     ) {
         viewModelScope.launch {
             val numeroSessione = sessioneManager.leggiNumeroSessione()
+            val userId = sessioneManager.leggiUserId()
 
-            if (numeroSessione != null) {
+            if (numeroSessione != null && userId != null) {
                 onSessionePresente()
             } else {
                 onSessioneAssente()

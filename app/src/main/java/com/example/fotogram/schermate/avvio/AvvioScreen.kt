@@ -3,10 +3,11 @@ package com.example.fotogram.schermate.avvio
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -33,26 +34,24 @@ fun AvvioScreen(
         }
     )
 
+    LaunchedEffect(Unit) {
+        viewModel.controllaSessione(
+            onSessionePresente = onVaiBacheca,
+            onSessioneAssente = onVaiRegistrazione
+        )
+    }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Fotogram",
+            text = "FOTOGRAM",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
 
-        Button(
-            onClick = {
-                viewModel.controllaSessione(
-                    onSessionePresente = onVaiBacheca,
-                    onSessioneAssente = onVaiRegistrazione
-                )
-            }
-        ) {
-            Text("Entra")
-        }
+        CircularProgressIndicator()
     }
 }

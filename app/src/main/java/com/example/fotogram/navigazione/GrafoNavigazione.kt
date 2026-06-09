@@ -131,7 +131,8 @@ fun GrafoNavigazione() {
                 ProfiloScreen(
                     onModificaProfilo = navigatore::vaiAModificaProfilo,
                     onApriImmaginePost = navigatore::vaiAImmaginePost,
-                    onApriMappaPost = navigatore::vaiAMappaPost
+                    onApriMappaPost = navigatore::vaiAMappaPost,
+                    onLogout = navigatore::vaiAllaRegistrazioneDopoLogout //da togliere alla fine
                 )
             }
 

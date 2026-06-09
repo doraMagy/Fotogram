@@ -21,23 +21,47 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.fotogram.schermate.bacheca.SchedaPost
 import com.example.fotogram.model.Utente
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.fotogram.sessione.SessioneManager
 
 @Composable
 fun ProfiloScreen(
     onModificaProfilo: () -> Unit,
     onApriImmaginePost: (String) -> Unit,
     onApriMappaPost: (String) -> Unit,
-    viewModel: ProfiloViewModel = viewModel()
+    onLogout: () -> Unit //da togliere alla fine
 ) {
+    val context = LocalContext.current
+
+    val viewModel: ProfiloViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                ProfiloViewModel(
+                    sessioneManager = SessioneManager(context)
+                )
+            }
+        }
+    )
+
     val utente = viewModel.utente
     val postPersonali = viewModel.postPersonali
+    val logoutCompletato = viewModel.logoutCompletato //da togliere alla fine
+
+    LaunchedEffect(logoutCompletato) {
+        if (logoutCompletato) {
+            onLogout()
+        }
+    }
 
     LazyColumn(
         contentPadding = PaddingValues(
@@ -51,7 +75,8 @@ fun ProfiloScreen(
         item {
             IntestazioneProfilo(
                 utente = utente,
-                onModificaProfilo = onModificaProfilo
+                onModificaProfilo = onModificaProfilo,
+                onLogout = viewModel::logout
             )
         }
 
@@ -81,7 +106,8 @@ fun ProfiloScreen(
 @Composable
 fun IntestazioneProfilo(
     utente: Utente,
-    onModificaProfilo: () -> Unit
+    onModificaProfilo: () -> Unit,
+    onLogout: () -> Unit //da togliere alla fine
 ) {
     Column(
         modifier = Modifier
@@ -168,6 +194,19 @@ fun IntestazioneProfilo(
         ) {
             Text("Modifica profilo")
         }
+
+        Spacer(
+            modifier = Modifier.height(8.dp)
+        )
+
+        //da togliere alla fine
+        OutlinedButton(
+            onClick = onLogout,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Logout")
+        }
+
     }
 }
 
