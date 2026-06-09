@@ -1,18 +1,26 @@
 package com.example.fotogram.schermate.avvio
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.fotogram.sessione.SessioneManager
+import kotlinx.coroutines.launch
 
-class AvvioViewModel : ViewModel() {
+class AvvioViewModel(
+    private val sessioneManager: SessioneManager
+) : ViewModel() {
 
-    fun controllaPrimoAvvio(): Boolean {
-        // Per ora simuliamo: non abbiamo ancora DataStore.
-        // Più avanti qui controlleremo se esiste una sessione salvata.
-        return true
-    }
+    fun controllaSessione(
+        onSessionePresente: () -> Unit,
+        onSessioneAssente: () -> Unit
+    ) {
+        viewModelScope.launch {
+            val numeroSessione = sessioneManager.leggiNumeroSessione()
 
-    fun controllaSessionePresente(): Boolean {
-        // Per ora simuliamo: fingiamo che la sessione esista già.
-        // Più avanti qui leggeremo il numero di sessione da DataStore.
-        return true
+            if (numeroSessione != null) {
+                onSessionePresente()
+            } else {
+                onSessioneAssente()
+            }
+        }
     }
 }

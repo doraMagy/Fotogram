@@ -121,8 +121,8 @@ fun GrafoNavigazione() {
 
             composable(Schermata.CreaPost.route) {
                 CreaPostScreen(
-                    onPostPubblicato = navigatore::vaiAllaBacheca,
-                    //oppure navigatore::vaiAlProfilo
+                    onPostPubblicato = navigatore::vaiAlProfilo,
+                    //navigatore::vaiAlProfilo o navigatore::vaiAllaBacheca
                     onSelezionaPosizione = navigatore::vaiASelezionaPosizione
                 )
             }

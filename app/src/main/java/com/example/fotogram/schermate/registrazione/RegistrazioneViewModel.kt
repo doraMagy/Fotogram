@@ -4,13 +4,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.fotogram.sessione.SessioneManager
+import kotlinx.coroutines.launch
 
-class RegistrazioneViewModel : ViewModel() {
+class RegistrazioneViewModel(private val sessioneManager: SessioneManager) : ViewModel() {
 
     var nomeUtente by mutableStateOf("")
         private set
 
     var immagineProfiloSelezionata by mutableStateOf(false)
+        private set
+
+    var registrazioneCompletata by mutableStateOf(false)
         private set
 
     val nomeValido: Boolean
@@ -34,8 +40,13 @@ class RegistrazioneViewModel : ViewModel() {
             return
         }
 
-        // Per ora non chiamiamo ancora il server.
-        // Più avanti qui otterremo il numero di sessione
-        // e lo salveremo con DataStore.
+        viewModelScope.launch {
+            sessioneManager.salvaSessione(
+                numeroSessione = "sessione_demo_123",
+                userId = 1
+            )
+
+            registrazioneCompletata = true
+        }
     }
 }

@@ -14,22 +14,45 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.fotogram.sessione.SessioneManager
 
 @Composable
 fun RegistrazioneScreen(
-    onRegistrazioneCompletata: () -> Unit,
-    viewModel: RegistrazioneViewModel = viewModel()
+    onRegistrazioneCompletata: () -> Unit
 ) {
+    val context = LocalContext.current
+
+    val viewModel: RegistrazioneViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                RegistrazioneViewModel(
+                    sessioneManager = SessioneManager(context)
+                )
+            }
+        }
+    )
+
     val nomeUtente = viewModel.nomeUtente
     val immagineProfiloSelezionata = viewModel.immagineProfiloSelezionata
     val registrazionePossibile = viewModel.registrazionePossibile
+    val registrazioneCompletata = viewModel.registrazioneCompletata
+
+    LaunchedEffect(registrazioneCompletata) {
+        if (registrazioneCompletata) {
+            onRegistrazioneCompletata()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -68,7 +91,6 @@ fun RegistrazioneScreen(
         Button(
             onClick = {
                 viewModel.completaRegistrazione()
-                onRegistrazioneCompletata()
             },
             enabled = registrazionePossibile,
             modifier = Modifier.fillMaxWidth()
