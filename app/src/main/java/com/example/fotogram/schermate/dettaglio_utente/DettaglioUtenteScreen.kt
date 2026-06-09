@@ -20,55 +20,29 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.example.fotogram.model.Post
 import com.example.fotogram.model.Utente
 import com.example.fotogram.schermate.bacheca.SchedaPost
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun DettaglioUtenteScreen(
     nomeUtente: String,
     onApriImmaginePost: (String) -> Unit,
-    onApriMappaPost: (String) -> Unit
+    onApriMappaPost: (String) -> Unit,
+    viewModel: DettaglioUtenteViewModel = viewModel()
 ) {
-    var seguito by remember {
-        mutableStateOf(false)
+    val seguito = viewModel.seguito
+    val utente = viewModel.utente
+    val postUtente = viewModel.postUtente
+
+    LaunchedEffect(nomeUtente) {
+        viewModel.caricaUtente(nomeUtente)
     }
-
-    val utenteDemo = Utente(
-        nomeUtente = nomeUtente,
-        bio = "Bio di $nomeUtente",
-        dataNascita = "20/05/2001",
-        numeroFollower = 42,
-        numeroFollowing = 18,
-        numeroPost = 2
-    )
-
-    val postUtente = listOf(
-        Post(
-            idPost = "post_${nomeUtente}_1",
-            nomeAutore = nomeUtente,
-            testo = "Post pubblicato da $nomeUtente",
-            seguito = seguito,
-            haPosizione = true,
-            dataCreazione = "2026-06-07"
-        ),
-        Post(
-            idPost = "post_${nomeUtente}_2",
-            nomeAutore = nomeUtente,
-            testo = "Secondo post di esempio.",
-            seguito = seguito,
-            haPosizione = false,
-            dataCreazione = "2026-06-06"
-        )
-    )
 
     LazyColumn(
         contentPadding = PaddingValues(
@@ -79,17 +53,15 @@ fun DettaglioUtenteScreen(
     ) {
         item {
             IntestazioneDettaglioUtente(
-                utente = utenteDemo,
+                utente = utente,
                 seguito = seguito,
-                onCambiaFollow = {
-                    seguito = !seguito
-                }
+                onCambiaFollow = viewModel::cambiaFollow
             )
         }
 
         item {
             Text(
-                text = "Post di $nomeUtente",
+                text = "Post di ${utente.nomeUtente}",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )

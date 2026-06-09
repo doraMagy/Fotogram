@@ -19,34 +19,22 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun CreaPostScreen(
-    onTornaBacheca: () -> Unit,
-    onSelezionaPosizione: () -> Unit
+    onPostPubblicato: () -> Unit,
+    onSelezionaPosizione: () -> Unit,
+    viewModel: CreaPostViewModel = viewModel()
 ) {
-    var testoPost by remember {
-        mutableStateOf("")
-    }
-
-    var immagineSelezionata by remember {
-        mutableStateOf(false)
-    }
-
-    var posizioneSelezionata by remember {
-        mutableStateOf(false)
-    }
-
-    val testoValido = testoPost.isNotBlank()
-    val postPubblicabile = testoValido && immagineSelezionata
+    val testoPost = viewModel.testoPost
+    val immagineSelezionata = viewModel.immagineSelezionata
+    val posizioneSelezionata = viewModel.posizioneSelezionata
+    val postPubblicabile = viewModel.postPubblicabile
 
     Column(
         modifier = Modifier
@@ -61,9 +49,7 @@ fun CreaPostScreen(
 
         BoxImmaginePost(
             immagineSelezionata = immagineSelezionata,
-            onClick = {
-                immagineSelezionata = true
-            }
+            onClick = viewModel::selezionaImmagine
         )
 
         Text(
@@ -73,11 +59,7 @@ fun CreaPostScreen(
 
         OutlinedTextField(
             value = testoPost,
-            onValueChange = { nuovoTesto ->
-                if (nuovoTesto.length <= 100) {
-                    testoPost = nuovoTesto
-                }
-            },
+            onValueChange = viewModel::aggiornaTestoPost,
             label = {
                 Text("Testo del post")
             },
@@ -101,7 +83,7 @@ fun CreaPostScreen(
 
         OutlinedButton(
             onClick = {
-                posizioneSelezionata = true
+                viewModel.selezionaPosizione()
                 onSelezionaPosizione()
             },
             modifier = Modifier.fillMaxWidth()
@@ -125,7 +107,10 @@ fun CreaPostScreen(
         )
 
         Button(
-            onClick = onTornaBacheca,
+            onClick = {
+                viewModel.pubblicaPost()
+                onPostPubblicato()
+            },
             enabled = postPubblicabile,
             modifier = Modifier.fillMaxWidth()
         ) {

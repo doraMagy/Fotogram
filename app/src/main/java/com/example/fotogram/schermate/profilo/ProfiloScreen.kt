@@ -25,51 +25,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.example.fotogram.model.Post
-import com.example.fotogram.model.Utente
 import com.example.fotogram.schermate.bacheca.SchedaPost
+import com.example.fotogram.model.Utente
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun ProfiloScreen(
     onModificaProfilo: () -> Unit,
     onApriImmaginePost: (String) -> Unit,
     onApriMappaPost: (String) -> Unit,
+    viewModel: ProfiloViewModel = viewModel()
 ) {
-    val utenteDemo = Utente(
-        nomeUtente = "utente_demo",
-        bio = "Amo fotografare posti random 📸",
-        dataNascita = "12/04/2002",
-        numeroFollower = 128,
-        numeroFollowing = 75,
-        numeroPost = 3
-    )
-
-    val postPersonali = listOf(
-        Post(
-            idPost = "mio_post_1",
-            nomeAutore = "utente_demo",
-            testo = "Il mio primo post su Fotogram!",
-            seguito = true,
-            haPosizione = true,
-            dataCreazione = "2026-06-07"
-        ),
-        Post(
-            idPost = "mio_post_2",
-            nomeAutore = "utente_demo",
-            testo = "Sto costruendo la mia app Android.",
-            seguito = true,
-            haPosizione = false,
-            dataCreazione = "2026-06-06"
-        ),
-        Post(
-            idPost = "mio_post_3",
-            nomeAutore = "utente_demo",
-            testo = "Test della schermata profilo.",
-            seguito = true,
-            haPosizione = true,
-            dataCreazione = "2026-06-05"
-        )
-    )
+    val utente = viewModel.utente
+    val postPersonali = viewModel.postPersonali
 
     LazyColumn(
         contentPadding = PaddingValues(
@@ -82,7 +50,7 @@ fun ProfiloScreen(
     ) {
         item {
             IntestazioneProfilo(
-                utente = utenteDemo,
+                utente = utente,
                 onModificaProfilo = onModificaProfilo
             )
         }

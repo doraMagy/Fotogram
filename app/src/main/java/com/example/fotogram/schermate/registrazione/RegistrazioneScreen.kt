@@ -1,48 +1,103 @@
 package com.example.fotogram.schermate.registrazione
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun RegistrazioneScreen(onRegistrazioneCompletata: () -> Unit) {
-    var nomeUtente by remember {
-        mutableStateOf("")
-    }
+fun RegistrazioneScreen(
+    onRegistrazioneCompletata: () -> Unit,
+    viewModel: RegistrazioneViewModel = viewModel()
+) {
+    val nomeUtente = viewModel.nomeUtente
+    val immagineProfiloSelezionata = viewModel.immagineProfiloSelezionata
+    val registrazionePossibile = viewModel.registrazionePossibile
 
     Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(
+            space = 20.dp,
+            alignment = Alignment.CenterVertically
+        ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("FOTOGRAM")
+        Text(
+            text = "FOTOGRAM",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
 
         OutlinedTextField(
             value = nomeUtente,
-            onValueChange = {
-                nomeUtente = it
-            },
+            onValueChange = viewModel::aggiornaNomeUtente,
             label = {
                 Text("Username")
-            }
+            },
+            supportingText = {
+                Text("${nomeUtente.length}/15 caratteri")
+            },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
         )
 
-        Text("Qual'è il tuo aspetto? img placeholder")
+        BoxImmagineProfiloRegistrazione(
+            immagineProfiloSelezionata = immagineProfiloSelezionata,
+            onClick = viewModel::selezionaImmagineProfilo
+        )
 
         Button(
-            onClick = onRegistrazioneCompletata
+            onClick = {
+                viewModel.completaRegistrazione()
+                onRegistrazioneCompletata()
+            },
+            enabled = registrazionePossibile,
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text("Completa registrazione")
+        }
+    }
+}
+
+@Composable
+fun BoxImmagineProfiloRegistrazione(
+    immagineProfiloSelezionata: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(180.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .clickable {
+                onClick()
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        if (immagineProfiloSelezionata) {
+            Text("Immagine profilo selezionata")
+        } else {
+            Text("Tocca per selezionare l'immagine profilo")
         }
     }
 }
