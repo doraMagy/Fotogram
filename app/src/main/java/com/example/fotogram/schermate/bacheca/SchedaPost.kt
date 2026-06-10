@@ -23,6 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.example.fotogram.model.Post
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 
 @Composable
 fun SchedaPost(
@@ -50,9 +53,8 @@ fun SchedaPost(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = post.nomeAutore,
-                    style = MaterialTheme.typography.titleMedium,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = if (mostraAutoreCliccabile) {
                         Modifier.clickable {
                             onApriDettaglioUtente(post.nomeAutore)
@@ -60,7 +62,29 @@ fun SchedaPost(
                     } else {
                         Modifier
                     }
-                )
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.secondaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "IMG",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+
+                    Spacer(
+                        modifier = Modifier.width(8.dp)
+                    )
+
+                    Text(
+                        text = post.nomeAutore,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
 
                 if (mostraBadge) {
                     AssistChip(

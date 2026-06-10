@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.fotogram.repository.UtenteRepository
+import com.example.fotogram.rete.RemoteDataSource
 import com.example.fotogram.sessione.SessioneManager
 
 @Composable
@@ -37,7 +39,10 @@ fun RegistrazioneScreen(
         factory = viewModelFactory {
             initializer {
                 RegistrazioneViewModel(
-                    sessioneManager = SessioneManager(context)
+                    utenteRepository = UtenteRepository(
+                        remoteDataSource = RemoteDataSource(),
+                        sessioneManager = SessioneManager(context)
+                    )
                 )
             }
         }
@@ -47,6 +52,8 @@ fun RegistrazioneScreen(
     val immagineProfiloSelezionata = viewModel.immagineProfiloSelezionata
     val registrazionePossibile = viewModel.registrazionePossibile
     val registrazioneCompletata = viewModel.registrazioneCompletata
+    val messaggioErrore = viewModel.messaggioErrore
+    val caricamento = viewModel.caricamento
 
     LaunchedEffect(registrazioneCompletata) {
         if (registrazioneCompletata) {
@@ -88,6 +95,14 @@ fun RegistrazioneScreen(
             onClick = viewModel::selezionaImmagineProfilo
         )
 
+        if (messaggioErrore != null) {
+            Text(
+                text = messaggioErrore,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+
         Button(
             onClick = {
                 viewModel.completaRegistrazione()
@@ -95,7 +110,11 @@ fun RegistrazioneScreen(
             enabled = registrazionePossibile,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Completa registrazione")
+            if (caricamento) {
+                Text("Registrazione...")
+            } else {
+                Text("Completa registrazione")
+            }
         }
     }
 }

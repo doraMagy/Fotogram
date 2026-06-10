@@ -4,45 +4,55 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.fotogram.model.Post
+import com.example.fotogram.repository.PostRepository
+import kotlinx.coroutines.launch
 
-class BachecaViewModel : ViewModel() {
+class BachecaViewModel(
+    private val postRepository: PostRepository
+) : ViewModel() {
 
-    var postBacheca by mutableStateOf(
-        listOf(
-            Post(
-                idPost = "post_1",
-                nomeAutore = "utente_demo",
-                testo = "Prima foto su Fotogram!",
-                seguito = true,
-                haPosizione = true,
-                dataCreazione = "2026-06-07"
-            ),
-            Post(
-                idPost = "post_2",
-                nomeAutore = "luna22",
-                testo = "Tramonto bellissimo oggi.",
-                seguito = false,
-                haPosizione = false,
-                dataCreazione = "2026-06-07"
-            ),
-            Post(
-                idPost = "post_3",
-                nomeAutore = "marco_dev",
-                testo = "Sto testando la bacheca dell'app.",
-                seguito = true,
-                haPosizione = true,
-                dataCreazione = "2026-06-06"
-            ),
-            Post(
-                idPost = "post_4",
-                nomeAutore = "ale_photo",
-                testo = "Foto random dalla galleria.",
-                seguito = false,
-                haPosizione = true,
-                dataCreazione = "2026-06-06"
-            )
-        )
-    )
+    var postBacheca by mutableStateOf<List<Post>>(emptyList())
         private set
+
+    var caricamento by mutableStateOf(false)
+        private set
+
+    var messaggioErrore by mutableStateOf<String?>(null)
+        private set
+
+    fun caricaBacheca() {
+        if (postBacheca.isNotEmpty()) {
+            return
+        }
+
+        viewModelScope.launch {
+            caricamento = true
+            messaggioErrore = null
+
+            try {
+                postBacheca = postRepository.caricaBacheca()
+            } catch (errore: Exception) {
+                messaggioErrore = errore.message ?: "Errore durante il caricamento della bacheca"
+            } finally {
+                caricamento = false
+            }
+        }
+    }
+
+    fun aggiornaBacheca() {
+        viewModelScope.launch {
+            caricamento = true
+            messaggioErrore = null
+
+            try {
+                postBacheca = postRepository.caricaBacheca()
+            } catch (errore: Exception) {
+                messaggioErrore = errore.message ?: "Errore durante l'aggiornamento della bacheca"
+            } finally {
+                caricamento = false
+            }
+        }
+    }
 }

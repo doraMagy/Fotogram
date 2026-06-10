@@ -32,6 +32,8 @@ import com.example.fotogram.model.Utente
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.fotogram.repository.UtenteRepository
+import com.example.fotogram.rete.RemoteDataSource
 import com.example.fotogram.sessione.SessioneManager
 
 @Composable
@@ -47,7 +49,10 @@ fun ProfiloScreen(
         factory = viewModelFactory {
             initializer {
                 ProfiloViewModel(
-                    sessioneManager = SessioneManager(context)
+                    utenteRepository = UtenteRepository(
+                        remoteDataSource = RemoteDataSource(),
+                        sessioneManager = SessioneManager(context)
+                    )
                 )
             }
         }
@@ -55,7 +60,13 @@ fun ProfiloScreen(
 
     val utente = viewModel.utente
     val postPersonali = viewModel.postPersonali
+    val caricamento = viewModel.caricamento
+    val messaggioErrore = viewModel.messaggioErrore
     val logoutCompletato = viewModel.logoutCompletato //da togliere alla fine
+
+    LaunchedEffect(Unit) {
+        viewModel.caricaProfilo()
+    }
 
     LaunchedEffect(logoutCompletato) {
         if (logoutCompletato) {
@@ -72,6 +83,25 @@ fun ProfiloScreen(
         ),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        if (caricamento) {
+            item {
+                Text(
+                    text = "Caricamento profilo...",
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+
+        if (messaggioErrore != null) {
+            item {
+                Text(
+                    text = messaggioErrore,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+
         item {
             IntestazioneProfilo(
                 utente = utente,
