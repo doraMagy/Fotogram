@@ -66,4 +66,20 @@ class UtenteRepository(
 
         return userResponse.toUtente()
     }
+
+    suspend fun caricaDettaglioUtente(idUtente: Int): Pair<Utente, Boolean> {
+        val sessionId = sessioneManager.leggiNumeroSessione()
+            ?: throw Exception("Sessione non trovata")
+
+        val userResponse = remoteDataSource.caricaUtente(
+            sessionId = sessionId,
+            userId = idUtente
+        )
+
+        return Pair(
+            userResponse.toUtente(),
+            userResponse.isYourFollowing
+        )
+    }
+
 }

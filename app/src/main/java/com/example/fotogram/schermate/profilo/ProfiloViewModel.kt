@@ -30,6 +30,7 @@ class ProfiloViewModel(
         listOf(
             Post(
                 idPost = "mio_post_1",
+                idAutore = 4,
                 nomeAutore = "utente_demo",
                 testo = "Post personale finto per ora.",
                 seguito = true,

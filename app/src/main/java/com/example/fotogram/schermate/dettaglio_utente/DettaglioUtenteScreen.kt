@@ -27,21 +27,48 @@ import androidx.compose.ui.unit.dp
 import com.example.fotogram.model.Utente
 import com.example.fotogram.schermate.bacheca.SchedaPost
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.fotogram.repository.PostRepository
+import com.example.fotogram.repository.UtenteRepository
+import com.example.fotogram.rete.RemoteDataSource
+import com.example.fotogram.sessione.SessioneManager
 
 @Composable
 fun DettaglioUtenteScreen(
-    nomeUtente: String,
+    idUtente: Int,
     onApriImmaginePost: (String) -> Unit,
     onApriMappaPost: (String) -> Unit,
-    viewModel: DettaglioUtenteViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+
+    val viewModel: DettaglioUtenteViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                DettaglioUtenteViewModel(
+                    utenteRepository = UtenteRepository(
+                        remoteDataSource = RemoteDataSource(),
+                        sessioneManager = SessioneManager(context)
+                    ),
+                    postRepository = PostRepository(
+                        remoteDataSource = RemoteDataSource(),
+                        sessioneManager = SessioneManager(context)
+                    )
+                )
+            }
+        }
+    )
+
     val seguito = viewModel.seguito
     val utente = viewModel.utente
     val postUtente = viewModel.postUtente
+    val caricamento = viewModel.caricamento
+    val messaggioErrore = viewModel.messaggioErrore
 
-    LaunchedEffect(nomeUtente) {
-        viewModel.caricaUtente(nomeUtente)
+    LaunchedEffect(idUtente) {
+        viewModel.caricaUtente(idUtente)
     }
 
     LazyColumn(
@@ -51,6 +78,25 @@ fun DettaglioUtenteScreen(
         ),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        if (caricamento) {
+            item {
+                Text(
+                    text = "Caricamento utente...",
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+
+        if (messaggioErrore != null) {
+            item {
+                Text(
+                    text = messaggioErrore,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+
         item {
             IntestazioneDettaglioUtente(
                 utente = utente,

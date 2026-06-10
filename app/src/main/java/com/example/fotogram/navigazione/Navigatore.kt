@@ -26,9 +26,9 @@ class Navigatore(
         navController.navigate(Schermata.Profilo.route)
     }
 
-    fun vaiADettaglioUtente(nomeUtente: String) {
+    fun vaiADettaglioUtente(idUtente: Int) {
         navController.navigate(
-            Schermata.DettaglioUtente.creaRoute(nomeUtente)
+            Schermata.DettaglioUtente.creaRoute(idUtente)
         )
     }
 

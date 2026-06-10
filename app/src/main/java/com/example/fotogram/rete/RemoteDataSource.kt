@@ -125,4 +125,32 @@ class RemoteDataSource(
             throw Exception(errore.message)
         }
     }
+
+    //GET post list authorId
+    suspend fun caricaPostUtente(
+        sessionId: String,
+        authorId: Int,
+        maxPostId: Int? = null,
+        limit: Int = 10
+    ): List<Int> {
+        val response = client.get("${KtorClient.BASE_URL}post/list/$authorId") {
+            headers {
+                append("x-session-id", sessionId)
+            }
+
+            maxPostId?.let {
+                parameter("maxPostId", it)
+            }
+
+            parameter("limit", limit)
+        }
+
+        if (response.status.isSuccess()) {
+            return response.body()
+        } else {
+            val errore: ErrorResponse = response.body()
+            throw Exception(errore.message)
+        }
+    }
+
 }

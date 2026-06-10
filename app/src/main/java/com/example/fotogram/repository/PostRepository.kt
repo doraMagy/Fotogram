@@ -36,4 +36,33 @@ class PostRepository(
             )
         }
     }
+
+    //ottenere i post di un utente specifico
+    suspend fun caricaPostDiUtente(idUtente: Int): List<Post> {
+        val sessionId = sessioneManager.leggiNumeroSessione()
+            ?: throw Exception("Sessione non trovata")
+
+        val autore = remoteDataSource.caricaUtente(
+            sessionId = sessionId,
+            userId = idUtente
+        )
+
+        val idPost = remoteDataSource.caricaPostUtente(
+            sessionId = sessionId,
+            authorId = idUtente,
+            limit = 10
+        )
+
+        return idPost.map { id ->
+            val postResponse = remoteDataSource.caricaPost(
+                sessionId = sessionId,
+                postId = id
+            )
+
+            postResponse.toPost(
+                nomeAutore = autore.username ?: "Utente $idUtente",
+                seguito = autore.isYourFollowing
+            )
+        }
+    }
 }

@@ -22,7 +22,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 
 @Composable
 fun BachecaScreen(
-    onApriDettaglioUtente: (String) -> Unit,
+    onApriDettaglioUtente: (Int) -> Unit,
     onApriImmaginePost: (String) -> Unit,
     onApriMappaPost: (String) -> Unit
 ) {

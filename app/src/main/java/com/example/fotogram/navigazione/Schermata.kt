@@ -12,9 +12,9 @@ sealed class Schermata(val route: String) {
 
     data object Profilo : Schermata("profilo")
 
-    data object DettaglioUtente : Schermata("dettaglio_utente/{nomeUtente}") {
-        fun creaRoute(nomeUtente: String): String {
-            return "dettaglio_utente/$nomeUtente"
+    data object DettaglioUtente : Schermata("dettaglio_utente/{idUtente}") {
+        fun creaRoute(idUtente: Int): String {
+            return "dettaglio_utente/$idUtente"
         }
     }
 

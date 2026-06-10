@@ -30,7 +30,7 @@ import androidx.compose.foundation.layout.width
 @Composable
 fun SchedaPost(
     post: Post,
-    onApriDettaglioUtente: (String) -> Unit,
+    onApriDettaglioUtente: (Int) -> Unit,
     onApriImmaginePost: (String) -> Unit,
     onApriMappaPost: (String) -> Unit,
     mostraAutoreCliccabile: Boolean = true,
@@ -57,7 +57,7 @@ fun SchedaPost(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = if (mostraAutoreCliccabile) {
                         Modifier.clickable {
-                            onApriDettaglioUtente(post.nomeAutore)
+                            onApriDettaglioUtente(post.idAutore)
                         }
                     } else {
                         Modifier

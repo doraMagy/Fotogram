@@ -3,6 +3,7 @@ package com.example.fotogram.repository
 import com.example.fotogram.model.Utente
 import com.example.fotogram.rete.UserResponse
 
+//aggiungendo funzione alla classe UserResponse della rete
 fun UserResponse.toUtente(): Utente {
     return Utente(
         nomeUtente = username ?: "Utente $id",

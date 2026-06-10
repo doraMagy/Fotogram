@@ -9,6 +9,7 @@ fun PostResponse.toPost(
 ): Post {
     return Post(
         idPost = id.toString(),
+        idAutore = authorId,
         nomeAutore = nomeAutore,
         testo = contentText,
         seguito = seguito,

@@ -139,16 +139,16 @@ fun GrafoNavigazione() {
             composable(
                 route = Schermata.DettaglioUtente.route,
                 arguments = listOf(
-                    navArgument("nomeUtente") {
-                        type = NavType.StringType
+                    navArgument("idUtente") {
+                        type = NavType.IntType
                     }
                 )
             ) { backStackEntry ->
 
-                val nomeUtente = backStackEntry.arguments?.getString("nomeUtente") ?: ""
+                val idUtente = backStackEntry.arguments?.getInt("idUtente") ?: 0
 
                 DettaglioUtenteScreen(
-                    nomeUtente = nomeUtente,
+                    idUtente = idUtente,
                     onApriImmaginePost = navigatore::vaiAImmaginePost,
                     onApriMappaPost = navigatore::vaiAMappaPost
                 )
