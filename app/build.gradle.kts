@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -60,5 +62,12 @@ dependencies {
 
     //dataStore
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    //rete
+    implementation(platform("io.ktor:ktor-bom:3.3.2"))
+    implementation("io.ktor:ktor-client-core")
+    implementation("io.ktor:ktor-client-okhttp")
+    implementation("io.ktor:ktor-client-content-negotiation")
+    implementation("io.ktor:ktor-serialization-kotlinx-json")
 
 }
