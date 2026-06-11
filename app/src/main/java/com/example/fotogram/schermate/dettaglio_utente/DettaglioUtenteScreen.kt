@@ -67,9 +67,20 @@ fun DettaglioUtenteScreen(
     val postUtente = viewModel.postUtente
     val caricamento = viewModel.caricamento
     val messaggioErrore = viewModel.messaggioErrore
+    val followAggiornato = viewModel.followAggiornato
 
     LaunchedEffect(idUtente) {
         viewModel.caricaUtente(idUtente)
+    }
+
+    LaunchedEffect(followAggiornato) {
+        followAggiornato?.let { risultato ->
+            val idAutore = risultato.first
+            val seguito = risultato.second
+
+            onFollowAggiornato(idAutore, seguito)
+            viewModel.followAggiornatoGestito()
+        }
     }
 
     LazyColumn(
@@ -104,7 +115,6 @@ fun DettaglioUtenteScreen(
                 seguito = seguito,
                 onCambiaFollow = {
                     viewModel.cambiaFollow(idUtente)
-                    onFollowAggiornato(idUtente, !seguito)
                 }
             )
         }

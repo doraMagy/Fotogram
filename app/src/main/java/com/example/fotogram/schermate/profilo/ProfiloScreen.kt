@@ -26,12 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.fotogram.schermate.bacheca.SchedaPost
 import com.example.fotogram.model.Utente
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.fotogram.repository.PostRepository
 import com.example.fotogram.repository.UtenteRepository
 import com.example.fotogram.rete.RemoteDataSource
 import com.example.fotogram.sessione.SessioneManager
@@ -50,6 +52,10 @@ fun ProfiloScreen(
             initializer {
                 ProfiloViewModel(
                     utenteRepository = UtenteRepository(
+                        remoteDataSource = RemoteDataSource(),
+                        sessioneManager = SessioneManager(context)
+                    ),
+                    postRepository = PostRepository(
                         remoteDataSource = RemoteDataSource(),
                         sessioneManager = SessioneManager(context)
                     )
@@ -116,6 +122,17 @@ fun ProfiloScreen(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(top = 8.dp)
             )
+        }
+
+        if (!caricamento && postPersonali.isEmpty()) {
+            item {
+                Text(
+                    text = "Non hai ancora pubblicato post.",
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
 
         items(postPersonali) { post ->

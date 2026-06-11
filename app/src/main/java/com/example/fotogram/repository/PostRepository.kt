@@ -10,13 +10,17 @@ class PostRepository(
 ) {
 
     //ottenere bacheca
-    suspend fun caricaBacheca(): List<Post> {
+    suspend fun caricaBacheca(
+        maxPostId: Int? = null,
+        limit: Int = 10
+    ): List<Post> {
         val sessionId = sessioneManager.leggiNumeroSessione()
             ?: throw Exception("Sessione non trovata")
 
         val idPost = remoteDataSource.caricaFeed(
             sessionId = sessionId,
-            limit = 10
+            maxPostId = maxPostId,
+            limit = limit
         )
 
         return idPost.map { id ->

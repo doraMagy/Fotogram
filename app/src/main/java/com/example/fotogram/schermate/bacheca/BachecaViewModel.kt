@@ -13,17 +13,33 @@ class BachecaViewModel(
     private val postRepository: PostRepository
 ) : ViewModel() {
 
+    companion object {
+        private const val LIMITE_POST = 10
+    }
+
     var postBacheca by mutableStateOf<List<Post>>(emptyList())
         private set
 
     var caricamento by mutableStateOf(false)
         private set
 
+    var aggiornamento by mutableStateOf(false)
+        private set
+
+    var caricamentoAltriPost by mutableStateOf(false)
+        private set
+
+    var fineFeed by mutableStateOf(false)
+        private set
+
     var messaggioErrore by mutableStateOf<String?>(null)
         private set
 
+    private var ultimoPostId: Int? = null
+
+    //prima apertura della bacheca, carica solo se la lista è vuota
     fun caricaBacheca() {
-        if (postBacheca.isNotEmpty()) {
+        if (postBacheca.isNotEmpty() || caricamento) {
             return
         }
 
@@ -32,7 +48,14 @@ class BachecaViewModel(
             messaggioErrore = null
 
             try {
-                postBacheca = postRepository.caricaBacheca()
+                val nuoviPost = postRepository.caricaBacheca(
+                    maxPostId = null,
+                    limit = LIMITE_POST
+                )
+
+                postBacheca = nuoviPost
+                ultimoPostId = nuoviPost.lastOrNull()?.idPost?.toIntOrNull()
+                fineFeed = nuoviPost.size < LIMITE_POST
             } catch (errore: Exception) {
                 messaggioErrore = errore.message ?: "Errore durante il caricamento della bacheca"
             } finally {
@@ -44,20 +67,65 @@ class BachecaViewModel(
     //per fare pull to refresh
     fun aggiornaBacheca() {
         viewModelScope.launch {
-            caricamento = true
+            aggiornamento = true
             messaggioErrore = null
+            fineFeed = false
+            ultimoPostId = null
 
             try {
-                postBacheca = postRepository.caricaBacheca()
+                val nuoviPost = postRepository.caricaBacheca(
+                    maxPostId = null,
+                    limit = LIMITE_POST
+                )
+
+                postBacheca = nuoviPost
+                ultimoPostId = nuoviPost.lastOrNull()?.idPost?.toIntOrNull()
+                fineFeed = nuoviPost.size < LIMITE_POST
             } catch (errore: Exception) {
                 messaggioErrore = errore.message ?: "Errore durante l'aggiornamento della bacheca"
             } finally {
-                caricamento = false
+                aggiornamento = false
             }
         }
     }
 
-    //aggiornare Assist chip di scoperta/segui
+    //caricamento post più vecchi
+    fun caricaAltriPost() {
+        val ultimoId = ultimoPostId ?: return
+
+        if (caricamento || aggiornamento || caricamentoAltriPost || fineFeed) {
+            return
+        }
+
+        viewModelScope.launch {
+            caricamentoAltriPost = true
+            messaggioErrore = null
+
+            try {
+                val nuoviPost = postRepository.caricaBacheca(
+                    maxPostId = ultimoId - 1,
+                    limit = LIMITE_POST
+                )
+
+                if (nuoviPost.isEmpty()) {
+                    fineFeed = true
+                } else {
+                    postBacheca = (postBacheca + nuoviPost).distinctBy { it.idPost }
+                    ultimoPostId = nuoviPost.lastOrNull()?.idPost?.toIntOrNull()
+
+                    if (nuoviPost.size < LIMITE_POST) {
+                        fineFeed = true
+                    }
+                }
+            } catch (errore: Exception) {
+                messaggioErrore = errore.message ?: "Errore durante il caricamento di altri post"
+            } finally {
+                caricamentoAltriPost = false
+            }
+        }
+    }
+
+    //aggiorna assist chip di scoperta/segui
     fun aggiornaFollowAutore(
         idAutore: Int,
         seguito: Boolean
@@ -72,5 +140,4 @@ class BachecaViewModel(
             }
         }
     }
-
 }

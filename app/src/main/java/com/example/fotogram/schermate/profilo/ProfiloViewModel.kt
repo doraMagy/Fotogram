@@ -7,11 +7,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fotogram.model.Post
 import com.example.fotogram.model.Utente
+import com.example.fotogram.repository.PostRepository
 import com.example.fotogram.repository.UtenteRepository
 import kotlinx.coroutines.launch
 
 class ProfiloViewModel(
-    private val utenteRepository: UtenteRepository
+    private val utenteRepository: UtenteRepository,
+    private val postRepository: PostRepository
 ) : ViewModel() {
 
     var utente by mutableStateOf(
@@ -26,19 +28,7 @@ class ProfiloViewModel(
     )
         private set
 
-    var postPersonali by mutableStateOf(
-        listOf(
-            Post(
-                idPost = "mio_post_1",
-                idAutore = 4,
-                nomeAutore = "utente_demo",
-                testo = "Post personale finto per ora.",
-                seguito = true,
-                haPosizione = true,
-                dataCreazione = "2026-06-07"
-            )
-        )
-    )
+    var postPersonali by mutableStateOf<List<Post>>(emptyList())
         private set
 
     var caricamento by mutableStateOf(false)
@@ -57,7 +47,13 @@ class ProfiloViewModel(
             messaggioErrore = null
 
             try {
+                val idUtente = utenteRepository.leggiUserId()
+
                 utente = utenteRepository.caricaProfiloPersonale()
+
+                postPersonali = postRepository.caricaPostDiUtente(
+                    idUtente = idUtente
+                )
             } catch (errore: Exception) {
                 messaggioErrore = errore.message ?: "Errore durante il caricamento del profilo"
             } finally {

@@ -40,6 +40,9 @@ class DettaglioUtenteViewModel(
     var messaggioErrore by mutableStateOf<String?>(null)
         private set
 
+    var followAggiornato by mutableStateOf<Pair<Int, Boolean>?>(null)
+        private set
+
     fun caricaUtente(idUtente: Int) {
         viewModelScope.launch {
             caricamento = true
@@ -65,30 +68,40 @@ class DettaglioUtenteViewModel(
             messaggioErrore = null
 
             try {
-                if (seguito) {
-                    utenteRepository.smettiDiSeguireUtente(idUtente)
-                    seguito = false
+                val nuovoStatoFollow = !seguito
 
-                    utente = utente.copy(
-                        numeroFollower = (utente.numeroFollower - 1).coerceAtLeast(0)
-                    )
-                } else {
+                if (nuovoStatoFollow) {
                     utenteRepository.seguiUtente(idUtente)
-                    seguito = true
 
                     utente = utente.copy(
                         numeroFollower = utente.numeroFollower + 1
                     )
+                } else {
+                    utenteRepository.smettiDiSeguireUtente(idUtente)
+
+                    utente = utente.copy(
+                        numeroFollower = (utente.numeroFollower - 1).coerceAtLeast(0)
+                    )
                 }
+
+                seguito = nuovoStatoFollow
 
                 postUtente = postUtente.map { post ->
                     post.copy(
-                        seguito = seguito
+                        seguito = nuovoStatoFollow
                     )
                 }
+
+                followAggiornato = Pair(idUtente, nuovoStatoFollow)
             } catch (errore: Exception) {
                 messaggioErrore = errore.message ?: "Errore durante l'aggiornamento del follow"
             }
         }
     }
+
+    fun followAggiornatoGestito() {
+        followAggiornato = null
+    }
+
+
 }

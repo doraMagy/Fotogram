@@ -102,5 +102,9 @@ class UtenteRepository(
         )
     }
 
+    suspend fun leggiUserId(): Int {
+        return sessioneManager.leggiUserId()
+            ?: throw Exception("Utente non trovato")
+    }
 
 }
