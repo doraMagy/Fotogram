@@ -19,22 +19,52 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.fotogram.repository.PostRepository
+import com.example.fotogram.rete.RemoteDataSource
+import com.example.fotogram.sessione.SessioneManager
 
 @Composable
 fun CreaPostScreen(
     onPostPubblicato: () -> Unit,
     onSelezionaPosizione: () -> Unit,
-    viewModel: CreaPostViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+
+    val viewModel: CreaPostViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                CreaPostViewModel(
+                    postRepository = PostRepository(
+                        remoteDataSource = RemoteDataSource(),
+                        sessioneManager = SessioneManager(context)
+                    )
+                )
+            }
+        }
+    )
+
     val testoPost = viewModel.testoPost
     val immagineSelezionata = viewModel.immagineSelezionata
     val posizioneSelezionata = viewModel.posizioneSelezionata
-    val postPubblicabile = viewModel.postPubblicabile
+    val pubblicazionePossibile = viewModel.pubblicazionePossibile
+    val postPubblicato = viewModel.postPubblicato
+    val messaggioErrore = viewModel.messaggioErrore
+    val caricamento = viewModel.caricamento
+
+    LaunchedEffect(postPubblicato) {
+        if (postPubblicato) {
+            onPostPubblicato()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -83,7 +113,6 @@ fun CreaPostScreen(
 
         OutlinedButton(
             onClick = {
-                viewModel.selezionaPosizione()
                 onSelezionaPosizione()
             },
             modifier = Modifier.fillMaxWidth()
@@ -106,15 +135,26 @@ fun CreaPostScreen(
             modifier = Modifier.height(8.dp)
         )
 
+        if (messaggioErrore != null) {
+            Text(
+                text = messaggioErrore,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+
         Button(
             onClick = {
                 viewModel.pubblicaPost()
-                onPostPubblicato()
             },
-            enabled = postPubblicabile,
+            enabled = pubblicazionePossibile,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Pubblica")
+            if (caricamento) {
+                Text("Pubblicazione...")
+            } else {
+                Text("Pubblica")
+            }
         }
     }
 }

@@ -4,8 +4,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.fotogram.repository.PostRepository
+import kotlinx.coroutines.launch
 
-class CreaPostViewModel : ViewModel() {
+class CreaPostViewModel(
+    private val postRepository: PostRepository
+) : ViewModel() {
 
     var testoPost by mutableStateOf("")
         private set
@@ -16,11 +21,26 @@ class CreaPostViewModel : ViewModel() {
     var posizioneSelezionata by mutableStateOf(false)
         private set
 
-    val testoValido: Boolean
-        get() = testoPost.isNotBlank()
+    var latitudine by mutableStateOf<Double?>(null)
+        private set
 
-    val postPubblicabile: Boolean
-        get() = testoValido && immagineSelezionata
+    var longitudine by mutableStateOf<Double?>(null)
+        private set
+
+    var caricamento by mutableStateOf(false)
+        private set
+
+    var messaggioErrore by mutableStateOf<String?>(null)
+        private set
+
+    var postPubblicato by mutableStateOf(false)
+        private set
+
+    val pubblicazionePossibile: Boolean
+        get() = testoPost.isNotBlank() &&
+                testoPost.length <= 100 &&
+                immagineSelezionata &&
+                !caricamento
 
     fun aggiornaTestoPost(nuovoTesto: String) {
         if (nuovoTesto.length <= 100) {
@@ -32,23 +52,49 @@ class CreaPostViewModel : ViewModel() {
         immagineSelezionata = true
     }
 
-    fun selezionaPosizione() {
+    fun aggiornaPosizione(
+        lat: Double,
+        lon: Double
+    ) {
         posizioneSelezionata = true
+        latitudine = lat
+        longitudine = lon
+    }
+
+    fun rimuoviPosizione() {
+        posizioneSelezionata = false
+        latitudine = null
+        longitudine = null
     }
 
     fun pubblicaPost() {
-        if (!postPubblicabile) {
+        if (!pubblicazionePossibile) {
             return
         }
 
-        // Per ora non facciamo ancora API o salvataggi reali.
-        // Più avanti qui chiameremo il Repository.
-        resetCampi()
+        viewModelScope.launch {
+            caricamento = true
+            messaggioErrore = null
+
+            try {
+                postRepository.creaPost(
+                    testo = testoPost,
+                    immagineBase64 = IMMAGINE_BASE64_TEMPORANEA,
+                    latitudine = latitudine,
+                    longitudine = longitudine
+                )
+
+                postPubblicato = true
+            } catch (errore: Exception) {
+                messaggioErrore = errore.message ?: "Errore durante la pubblicazione del post"
+            } finally {
+                caricamento = false
+            }
+        }
     }
 
-    private fun resetCampi() {
-        testoPost = ""
-        immagineSelezionata = false
-        posizioneSelezionata = false
+    companion object {
+        private const val IMMAGINE_BASE64_TEMPORANEA =
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII="
     }
 }

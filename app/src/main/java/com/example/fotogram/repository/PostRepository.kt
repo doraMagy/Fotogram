@@ -1,6 +1,8 @@
 package com.example.fotogram.repository
 
 import com.example.fotogram.model.Post
+import com.example.fotogram.rete.CreaPostRequest
+import com.example.fotogram.rete.LocationResponse
 import com.example.fotogram.rete.RemoteDataSource
 import com.example.fotogram.sessione.SessioneManager
 
@@ -69,4 +71,47 @@ class PostRepository(
             )
         }
     }
+
+    //creazione di un post
+    suspend fun creaPost(
+        testo: String,
+        immagineBase64: String,
+        latitudine: Double?,
+        longitudine: Double?
+    ): Post {
+        val sessionId = sessioneManager.leggiNumeroSessione()
+            ?: throw Exception("Sessione non trovata")
+
+        val userId = sessioneManager.leggiUserId()
+            ?: throw Exception("Utente non trovato")
+
+        val posizione = if (latitudine != null && longitudine != null) {
+            LocationResponse(
+                latitude = latitudine,
+                longitude = longitudine
+            )
+        } else {
+            null
+        }
+
+        val postResponse = remoteDataSource.creaPost(
+            sessionId = sessionId,
+            request = CreaPostRequest(
+                contentText = testo,
+                contentPicture = immagineBase64,
+                location = posizione
+            )
+        )
+
+        val autore = remoteDataSource.caricaUtente(
+            sessionId = sessionId,
+            userId = userId
+        )
+
+        return postResponse.toPost(
+            nomeAutore = autore.username ?: "Utente $userId",
+            seguito = true
+        )
+    }
+
 }

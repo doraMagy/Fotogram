@@ -189,5 +189,27 @@ class RemoteDataSource(
         }
     }
 
+    //POST post
+    suspend fun creaPost(
+        sessionId: String,
+        request: CreaPostRequest
+    ): PostResponse {
+        val response = client.post("${KtorClient.BASE_URL}post") {
+            headers {
+                append("x-session-id", sessionId)
+            }
 
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }
+
+        if (response.status.isSuccess()) {
+            return response.body()
+        } else {
+            val errore: ErrorResponse = response.body()
+            throw Exception(errore.message)
+        }
+    }
+
+    //PUT user image -> manca ancora
 }

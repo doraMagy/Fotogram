@@ -1,4 +1,4 @@
-package com.example.fotogram.componenti
+package com.example.fotogram.navBar
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
