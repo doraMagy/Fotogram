@@ -10,10 +10,10 @@ fun PostResponse.toPost(
     return Post(
         idPost = id.toString(),
         idAutore = authorId,
-        nomeAutore = nomeAutore,
-        testo = contentText,
+        nomeAutore = nomeAutore.ifBlank { "Utente $authorId" },
+        testo = contentText?.takeIf { it.isNotBlank() } ?: "Nessuna descrizione",
         seguito = seguito,
         haPosizione = location != null,
-        dataCreazione = createdAt
+        dataCreazione = createdAt ?: ""
     )
 }

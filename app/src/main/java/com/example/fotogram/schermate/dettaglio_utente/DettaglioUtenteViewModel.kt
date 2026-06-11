@@ -59,15 +59,36 @@ class DettaglioUtenteViewModel(
         }
     }
 
-    fun cambiaFollow() {
-        // Per ora cambia solo localmente.
-        // Nel prossimo step lo colleghiamo a PUT/DELETE /follow/{targetId}.
-        seguito = !seguito
+    //FOLLOW O UNFOLLOW
+    fun cambiaFollow(idUtente: Int) {
+        viewModelScope.launch {
+            messaggioErrore = null
 
-        postUtente = postUtente.map { post ->
-            post.copy(
-                seguito = seguito
-            )
+            try {
+                if (seguito) {
+                    utenteRepository.smettiDiSeguireUtente(idUtente)
+                    seguito = false
+
+                    utente = utente.copy(
+                        numeroFollower = (utente.numeroFollower - 1).coerceAtLeast(0)
+                    )
+                } else {
+                    utenteRepository.seguiUtente(idUtente)
+                    seguito = true
+
+                    utente = utente.copy(
+                        numeroFollower = utente.numeroFollower + 1
+                    )
+                }
+
+                postUtente = postUtente.map { post ->
+                    post.copy(
+                        seguito = seguito
+                    )
+                }
+            } catch (errore: Exception) {
+                messaggioErrore = errore.message ?: "Errore durante l'aggiornamento del follow"
+            }
         }
     }
 }

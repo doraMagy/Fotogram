@@ -41,6 +41,7 @@ class BachecaViewModel(
         }
     }
 
+    //per fare pull to refresh
     fun aggiornaBacheca() {
         viewModelScope.launch {
             caricamento = true
@@ -55,4 +56,21 @@ class BachecaViewModel(
             }
         }
     }
+
+    //aggiornare Assist chip di scoperta/segui
+    fun aggiornaFollowAutore(
+        idAutore: Int,
+        seguito: Boolean
+    ) {
+        postBacheca = postBacheca.map { post ->
+            if (post.idAutore == idAutore) {
+                post.copy(
+                    seguito = seguito
+                )
+            } else {
+                post
+            }
+        }
+    }
+
 }

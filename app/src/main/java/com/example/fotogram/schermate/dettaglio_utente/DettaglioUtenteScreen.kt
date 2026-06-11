@@ -41,6 +41,7 @@ fun DettaglioUtenteScreen(
     idUtente: Int,
     onApriImmaginePost: (String) -> Unit,
     onApriMappaPost: (String) -> Unit,
+    onFollowAggiornato: (Int, Boolean) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -101,7 +102,10 @@ fun DettaglioUtenteScreen(
             IntestazioneDettaglioUtente(
                 utente = utente,
                 seguito = seguito,
-                onCambiaFollow = viewModel::cambiaFollow
+                onCambiaFollow = {
+                    viewModel.cambiaFollow(idUtente)
+                    onFollowAggiornato(idUtente, !seguito)
+                }
             )
         }
 

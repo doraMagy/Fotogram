@@ -24,7 +24,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 fun BachecaScreen(
     onApriDettaglioUtente: (Int) -> Unit,
     onApriImmaginePost: (String) -> Unit,
-    onApriMappaPost: (String) -> Unit
+    onApriMappaPost: (String) -> Unit,
+    idAutoreFollowAggiornato: Int?,
+    seguitoAggiornato: Boolean?,
+    onFollowAggiornatoGestito: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -49,6 +52,17 @@ fun BachecaScreen(
 
     LaunchedEffect(Unit) {
         viewModel.caricaBacheca()
+    }
+
+    LaunchedEffect(idAutoreFollowAggiornato, seguitoAggiornato) {
+        if (idAutoreFollowAggiornato != null && seguitoAggiornato != null) {
+            viewModel.aggiornaFollowAutore(
+                idAutore = idAutoreFollowAggiornato,
+                seguito = seguitoAggiornato
+            )
+
+            onFollowAggiornatoGestito()
+        }
     }
 
     LazyColumn(

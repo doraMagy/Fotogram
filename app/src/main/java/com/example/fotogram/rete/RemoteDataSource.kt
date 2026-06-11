@@ -3,6 +3,7 @@ package com.example.fotogram.rete
 import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.headers
@@ -36,6 +37,7 @@ class RemoteDataSource(
         }
     }
 
+    //GET user-userId
     suspend fun caricaUtente(
         sessionId: String,
         userId: Int
@@ -152,5 +154,40 @@ class RemoteDataSource(
             throw Exception(errore.message)
         }
     }
+
+    //PUT follow targetId - follow utente
+    suspend fun seguiUtente(
+        sessionId: String,
+        targetId: Int
+    ) {
+        val response = client.put("${KtorClient.BASE_URL}follow/$targetId") {
+            headers {
+                append("x-session-id", sessionId)
+            }
+        }
+
+        if (!response.status.isSuccess()) {
+            val errore: ErrorResponse = response.body()
+            throw Exception(errore.message)
+        }
+    }
+
+    //DELETE follow targetId - unfollow utente
+    suspend fun smettiDiSeguireUtente(
+        sessionId: String,
+        targetId: Int
+    ) {
+        val response = client.delete("${KtorClient.BASE_URL}follow/$targetId") {
+            headers {
+                append("x-session-id", sessionId)
+            }
+        }
+
+        if (!response.status.isSuccess()) {
+            val errore: ErrorResponse = response.body()
+            throw Exception(errore.message)
+        }
+    }
+
 
 }

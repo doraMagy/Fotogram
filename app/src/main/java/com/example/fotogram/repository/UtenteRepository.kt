@@ -82,4 +82,25 @@ class UtenteRepository(
         )
     }
 
+    suspend fun seguiUtente(targetId: Int) {
+        val sessionId = sessioneManager.leggiNumeroSessione()
+            ?: throw Exception("Sessione non trovata")
+
+        remoteDataSource.seguiUtente(
+            sessionId = sessionId,
+            targetId = targetId
+        )
+    }
+
+    suspend fun smettiDiSeguireUtente(targetId: Int) {
+        val sessionId = sessioneManager.leggiNumeroSessione()
+            ?: throw Exception("Sessione non trovata")
+
+        remoteDataSource.smettiDiSeguireUtente(
+            sessionId = sessionId,
+            targetId = targetId
+        )
+    }
+
+
 }

@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
 data class PostResponse(
     val id: Int,
     val authorId: Int,
-    val createdAt: String,
-    val contentPicture: String,
-    val contentText: String,
+    val createdAt: String? = null,
+    val contentPicture: String? = null,
+    val contentText: String? = null,
     val location: LocationResponse? = null
 )

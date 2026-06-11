@@ -6,8 +6,8 @@ import com.example.fotogram.rete.UserResponse
 //aggiungendo funzione alla classe UserResponse della rete
 fun UserResponse.toUtente(): Utente {
     return Utente(
-        nomeUtente = username ?: "Utente $id",
-        bio = bio ?: "",
+        nomeUtente = username?.takeIf { it.isNotBlank() } ?: "Utente $id",
+        bio = bio?.takeIf { it.isNotBlank() } ?: "Bio mancante",
         dataNascita = dateOfBirth ?: "",
         numeroFollower = followersCount,
         numeroFollowing = followingCount,

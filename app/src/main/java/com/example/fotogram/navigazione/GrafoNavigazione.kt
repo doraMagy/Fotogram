@@ -111,11 +111,26 @@ fun GrafoNavigazione() {
                 )
             }
 
-            composable(Schermata.Bacheca.route) {
+            composable(Schermata.Bacheca.route) { bachecaBackStackEntry ->
+
+                val idAutoreFollowAggiornato = bachecaBackStackEntry
+                    .savedStateHandle
+                    .get<Int>("idAutoreFollowAggiornato")
+
+                val seguitoAggiornato = bachecaBackStackEntry
+                    .savedStateHandle
+                    .get<Boolean>("seguitoAggiornato")
+
                 BachecaScreen(
                     onApriDettaglioUtente = navigatore::vaiADettaglioUtente,
                     onApriImmaginePost = navigatore::vaiAImmaginePost,
-                    onApriMappaPost = navigatore::vaiAMappaPost
+                    onApriMappaPost = navigatore::vaiAMappaPost,
+                    idAutoreFollowAggiornato = idAutoreFollowAggiornato,
+                    seguitoAggiornato = seguitoAggiornato,
+                    onFollowAggiornatoGestito = {
+                        bachecaBackStackEntry.savedStateHandle.remove<Int>("idAutoreFollowAggiornato")
+                        bachecaBackStackEntry.savedStateHandle.remove<Boolean>("seguitoAggiornato")
+                    }
                 )
             }
 
@@ -150,7 +165,16 @@ fun GrafoNavigazione() {
                 DettaglioUtenteScreen(
                     idUtente = idUtente,
                     onApriImmaginePost = navigatore::vaiAImmaginePost,
-                    onApriMappaPost = navigatore::vaiAMappaPost
+                    onApriMappaPost = navigatore::vaiAMappaPost,
+                    onFollowAggiornato = { idAutore, seguito ->
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("idAutoreFollowAggiornato", idAutore)
+
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("seguitoAggiornato", seguito)
+                    }
                 )
             }
 
