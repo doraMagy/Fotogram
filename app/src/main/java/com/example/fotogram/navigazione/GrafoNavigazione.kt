@@ -12,8 +12,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.fotogram.componenti.BarraInferiore
-import com.example.fotogram.componenti.BarraSuperiore
+import com.example.fotogram.navBar.BarraInferiore
+import com.example.fotogram.navBar.BarraSuperiore
 import com.example.fotogram.schermate.avvio.AvvioScreen
 import com.example.fotogram.schermate.bacheca.BachecaScreen
 import com.example.fotogram.schermate.crea_post.CreaPostScreen
