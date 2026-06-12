@@ -1,14 +1,17 @@
 package com.example.fotogram.repository
 
+import com.example.fotogram.database.PostDao
 import com.example.fotogram.model.Post
 import com.example.fotogram.rete.CreaPostRequest
 import com.example.fotogram.rete.LocationResponse
 import com.example.fotogram.rete.RemoteDataSource
 import com.example.fotogram.sessione.SessioneManager
+import android.util.Log
 
 class PostRepository(
     private val remoteDataSource: RemoteDataSource,
-    private val sessioneManager: SessioneManager
+    private val sessioneManager: SessioneManager,
+    private val postDao: PostDao
 ) {
 
     //ottenere bacheca
@@ -26,19 +29,9 @@ class PostRepository(
         )
 
         return idPost.map { id ->
-            val postResponse = remoteDataSource.caricaPost(
+            caricaPostConCache(
                 sessionId = sessionId,
-                postId = id
-            )
-
-            val autore = remoteDataSource.caricaUtente(
-                sessionId = sessionId,
-                userId = postResponse.authorId
-            )
-
-            postResponse.toPost(
-                nomeAutore = autore.username ?: "Utente ${postResponse.authorId}",
-                seguito = autore.isYourFollowing
+                idPost = id
             )
         }
     }
@@ -60,14 +53,11 @@ class PostRepository(
         )
 
         return idPost.map { id ->
-            val postResponse = remoteDataSource.caricaPost(
+            caricaPostConCache(
                 sessionId = sessionId,
-                postId = id
-            )
-
-            postResponse.toPost(
-                nomeAutore = autore.username ?: "Utente $idUtente",
-                seguito = autore.isYourFollowing
+                idPost = id,
+                nomeAutoreGiaCaricato = autore.username ?: "Utente $idUtente",
+                seguitoGiaCaricato = autore.isYourFollowing
             )
         }
     }
@@ -108,10 +98,79 @@ class PostRepository(
             userId = userId
         )
 
-        return postResponse.toPost(
+        val postEntity = postResponse.toPostEntity(
             nomeAutore = autore.username ?: "Utente $userId",
             seguito = true
         )
+
+        postDao.salvaPost(postEntity)
+
+        Log.d("PostRepository", "Nuovo post ${postEntity.idPost} creato e salvato in Room")
+
+        return postEntity.toPost()
     }
 
+    private suspend fun caricaPostConCache(
+        sessionId: String,
+        idPost: Int,
+        nomeAutoreGiaCaricato: String? = null,
+        seguitoGiaCaricato: Boolean? = null
+    ): Post {
+        val postInCache = postDao.cercaPost(idPost)
+
+        if (postInCache != null) {
+            Log.d("PostRepository", "Post $idPost trovato in cache Room")
+            return postInCache.toPost()
+        }
+
+        Log.d("PostRepository", "Post $idPost non in cache, scarico dal server")
+
+        val postResponse = remoteDataSource.caricaPost(
+            sessionId = sessionId,
+            postId = idPost
+        )
+
+        val nomeAutore: String
+        val seguito: Boolean
+
+        if (nomeAutoreGiaCaricato != null && seguitoGiaCaricato != null) {
+            nomeAutore = nomeAutoreGiaCaricato
+            seguito = seguitoGiaCaricato
+
+            Log.d("PostRepository", "Autore del post $idPost già caricato: $nomeAutore")
+        } else {
+            val autore = remoteDataSource.caricaUtente(
+                sessionId = sessionId,
+                userId = postResponse.authorId
+            )
+
+            nomeAutore = autore.username ?: "Utente ${postResponse.authorId}"
+            seguito = autore.isYourFollowing
+
+            Log.d("PostRepository", "Autore del post $idPost scaricato: $nomeAutore")
+        }
+
+        val postEntity = postResponse.toPostEntity(
+            nomeAutore = nomeAutore,
+            seguito = seguito
+        )
+
+        postDao.salvaPost(postEntity)
+
+        Log.d("PostRepository", "Post $idPost salvato in Room")
+
+        return postEntity.toPost()
+    }
+
+    suspend fun aggiornaSeguitoAutoreInCache(
+        idAutore: Int,
+        seguito: Boolean
+    ) {
+        postDao.aggiornaSeguitoAutore(
+            idAutore = idAutore,
+            seguito = seguito
+        )
+
+        Log.d("PostRepository", "Cache Room aggiornata: autore $idAutore seguito = $seguito")
+    }
 }

@@ -14,6 +14,7 @@ abstract class AppDatabase : RoomDatabase() {
         //singleton
         @Volatile
         private var INSTANCE: AppDatabase? = null
+
         //singola istanza del database per tutta l'app
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {

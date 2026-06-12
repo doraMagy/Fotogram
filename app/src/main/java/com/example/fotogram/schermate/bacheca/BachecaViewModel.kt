@@ -1,5 +1,6 @@
 package com.example.fotogram.schermate.bacheca
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -137,6 +138,17 @@ class BachecaViewModel(
                 )
             } else {
                 post
+            }
+        }
+
+        viewModelScope.launch {
+            try {
+                postRepository.aggiornaSeguitoAutoreInCache(
+                    idAutore = idAutore,
+                    seguito = seguito
+                )
+            } catch (errore: Exception) {
+                Log.d("BachecaViewModel", "Errore aggiornamento follow in cache: ${errore.message}")
             }
         }
     }

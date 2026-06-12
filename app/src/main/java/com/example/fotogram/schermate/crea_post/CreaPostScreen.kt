@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.fotogram.database.AppDatabase
 import com.example.fotogram.repository.PostRepository
 import com.example.fotogram.rete.RemoteDataSource
 import com.example.fotogram.sessione.SessioneManager
@@ -45,7 +46,8 @@ fun CreaPostScreen(
                 CreaPostViewModel(
                     postRepository = PostRepository(
                         remoteDataSource = RemoteDataSource(),
-                        sessioneManager = SessioneManager(context)
+                        sessioneManager = SessioneManager(context),
+                        postDao = AppDatabase.getDatabase(context).postDao()
                     )
                 )
             }

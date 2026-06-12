@@ -24,6 +24,7 @@ import com.example.fotogram.rete.RemoteDataSource
 import com.example.fotogram.sessione.SessioneManager
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import com.example.fotogram.database.AppDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +44,8 @@ fun BachecaScreen(
                 BachecaViewModel(
                     postRepository = PostRepository(
                         remoteDataSource = RemoteDataSource(),
-                        sessioneManager = SessioneManager(context)
+                        sessioneManager = SessioneManager(context),
+                        postDao = AppDatabase.getDatabase(context).postDao()
                     )
                 )
             }

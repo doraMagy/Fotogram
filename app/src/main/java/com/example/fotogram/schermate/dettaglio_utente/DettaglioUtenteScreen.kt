@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.fotogram.database.AppDatabase
 import com.example.fotogram.repository.PostRepository
 import com.example.fotogram.repository.UtenteRepository
 import com.example.fotogram.rete.RemoteDataSource
@@ -55,7 +56,8 @@ fun DettaglioUtenteScreen(
                     ),
                     postRepository = PostRepository(
                         remoteDataSource = RemoteDataSource(),
-                        sessioneManager = SessioneManager(context)
+                        sessioneManager = SessioneManager(context),
+                        postDao = AppDatabase.getDatabase(context).postDao()
                     )
                 )
             }

@@ -19,6 +19,13 @@ interface PostDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun salvaPost(post: List<PostEntity>)
 
+    //aggiorna Room a follow/unfollow
+    @Query("UPDATE post SET seguito = :seguito WHERE idAutore = :idAutore")
+    suspend fun aggiornaSeguitoAutore(
+        idAutore: Int,
+        seguito: Boolean
+    )
+
     @Query("DELETE FROM post")
     suspend fun eliminaTuttiPost()
 }
