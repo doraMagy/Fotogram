@@ -15,7 +15,10 @@ fun PostResponse.toPost(
         testo = contentText?.takeIf { it.isNotBlank() } ?: "Nessuna descrizione",
         seguito = seguito,
         haPosizione = location != null,
-        dataCreazione = createdAt ?: ""
+        dataCreazione = createdAt ?: "",
+        immagineBase64 = contentPicture,
+        latitudine = location?.latitude,
+        longitudine = location?.longitude
     )
 }
 
@@ -46,7 +49,10 @@ fun PostEntity.toPost(): Post {
         testo = testo,
         seguito = seguito,
         haPosizione = latitudine != null && longitudine != null,
-        dataCreazione = dataCreazione
+        dataCreazione = dataCreazione,
+        immagineBase64 = immagineBase64,
+        latitudine = latitudine,
+        longitudine = longitudine
     )
 }
 

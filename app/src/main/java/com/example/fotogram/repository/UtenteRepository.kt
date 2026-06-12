@@ -43,10 +43,6 @@ class UtenteRepository(
         return userResponse.toUtente()
     }
 
-    suspend fun logout() {
-        sessioneManager.eliminaSessione()
-    }
-
     suspend fun aggiornaProfilo(
         nomeUtente: String,
         bio: String,

@@ -38,13 +38,15 @@ import com.example.fotogram.repository.PostRepository
 import com.example.fotogram.repository.UtenteRepository
 import com.example.fotogram.rete.RemoteDataSource
 import com.example.fotogram.sessione.SessioneManager
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 
 @Composable
 fun ProfiloScreen(
     onModificaProfilo: () -> Unit,
     onApriImmaginePost: (String) -> Unit,
     onApriMappaPost: (String) -> Unit,
-    onLogout: () -> Unit //da togliere alla fine
 ) {
     val context = LocalContext.current
 
@@ -70,19 +72,33 @@ fun ProfiloScreen(
     val postPersonali = viewModel.postPersonali
     val caricamento = viewModel.caricamento
     val messaggioErrore = viewModel.messaggioErrore
-    val logoutCompletato = viewModel.logoutCompletato //da togliere alla fine
+
+    val caricamentoAltriPost = viewModel.caricamentoAltriPost
+    val finePost = viewModel.finePost
+
+    val listState = rememberLazyListState()
+
+    val vicinoAlFondo = remember {
+        derivedStateOf {
+            val ultimoVisibile = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val totaleElementi = listState.layoutInfo.totalItemsCount
+
+            totaleElementi > 0 && ultimoVisibile >= totaleElementi - 3
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.caricaProfilo()
     }
 
-    LaunchedEffect(logoutCompletato) {
-        if (logoutCompletato) {
-            onLogout()
+    LaunchedEffect(vicinoAlFondo.value) {
+        if (vicinoAlFondo.value) {
+            viewModel.caricaAltriPost()
         }
     }
 
     LazyColumn(
+        state = listState,
         contentPadding = PaddingValues(
             start = 16.dp,
             end = 16.dp,
@@ -113,8 +129,7 @@ fun ProfiloScreen(
         item {
             IntestazioneProfilo(
                 utente = utente,
-                onModificaProfilo = onModificaProfilo,
-                onLogout = viewModel::logout
+                onModificaProfilo = onModificaProfilo
             )
         }
 
@@ -149,14 +164,22 @@ fun ProfiloScreen(
                 mostraBadge = false
             )
         }
+
+        if (caricamentoAltriPost) {
+            item {
+                Text(
+                    text = "Caricamento altri post...",
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
     }
 }
 
 @Composable
 fun IntestazioneProfilo(
     utente: Utente,
-    onModificaProfilo: () -> Unit,
-    onLogout: () -> Unit //da togliere alla fine
+    onModificaProfilo: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -243,19 +266,6 @@ fun IntestazioneProfilo(
         ) {
             Text("Modifica profilo")
         }
-
-        Spacer(
-            modifier = Modifier.height(8.dp)
-        )
-
-        //da togliere alla fine
-        OutlinedButton(
-            onClick = onLogout,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Logout")
-        }
-
     }
 }
 

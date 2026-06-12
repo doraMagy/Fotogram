@@ -7,5 +7,8 @@ data class Post(
     val testo: String,
     val seguito: Boolean,
     val haPosizione: Boolean,
-    val dataCreazione: String
+    val dataCreazione: String,
+    val immagineBase64: String? = null,
+    val latitudine: Double? = null,
+    val longitudine: Double? = null
 )

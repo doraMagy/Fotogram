@@ -36,6 +36,9 @@ import com.example.fotogram.repository.PostRepository
 import com.example.fotogram.repository.UtenteRepository
 import com.example.fotogram.rete.RemoteDataSource
 import com.example.fotogram.sessione.SessioneManager
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 
 @Composable
 fun DettaglioUtenteScreen(
@@ -71,8 +74,27 @@ fun DettaglioUtenteScreen(
     val messaggioErrore = viewModel.messaggioErrore
     val followAggiornato = viewModel.followAggiornato
 
+    val caricamentoAltriPost = viewModel.caricamentoAltriPost
+
+    val listState = rememberLazyListState()
+
+    val vicinoAlFondo = remember {
+        derivedStateOf {
+            val ultimoVisibile = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val totaleElementi = listState.layoutInfo.totalItemsCount
+
+            totaleElementi > 0 && ultimoVisibile >= totaleElementi - 3
+        }
+    }
+
     LaunchedEffect(idUtente) {
         viewModel.caricaUtente(idUtente)
+    }
+
+    LaunchedEffect(vicinoAlFondo.value) {
+        if (vicinoAlFondo.value) {
+            viewModel.caricaAltriPost()
+        }
     }
 
     LaunchedEffect(followAggiornato) {
@@ -86,6 +108,7 @@ fun DettaglioUtenteScreen(
     }
 
     LazyColumn(
+        state = listState,
         contentPadding = PaddingValues(
             top = 16.dp,
             bottom = 24.dp
@@ -140,6 +163,15 @@ fun DettaglioUtenteScreen(
                 mostraAutoreCliccabile = false,
                 mostraBadge = false
             )
+        }
+
+        if (caricamentoAltriPost) {
+            item {
+                Text(
+                    text = "Caricamento altri post...",
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
         }
     }
 }

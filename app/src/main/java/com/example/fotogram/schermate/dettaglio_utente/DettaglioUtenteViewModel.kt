@@ -16,6 +16,10 @@ class DettaglioUtenteViewModel(
     private val postRepository: PostRepository
 ) : ViewModel() {
 
+    companion object {
+        private const val LIMITE_POST = 10
+    }
+
     var seguito by mutableStateOf(false)
         private set
 
@@ -37,23 +41,49 @@ class DettaglioUtenteViewModel(
     var caricamento by mutableStateOf(false)
         private set
 
+    var caricamentoAltriPost by mutableStateOf(false)
+        private set
+
+    var finePost by mutableStateOf(false)
+        private set
+
     var messaggioErrore by mutableStateOf<String?>(null)
         private set
 
     var followAggiornato by mutableStateOf<Pair<Int, Boolean>?>(null)
         private set
 
+    private var idUtenteCorrente: Int? = null
+    private var ultimoPostId: Int? = null
+
     fun caricaUtente(idUtente: Int) {
+        if (caricamento || idUtenteCorrente == idUtente && postUtente.isNotEmpty()) {
+            return
+        }
+
         viewModelScope.launch {
             caricamento = true
             messaggioErrore = null
+            finePost = false
+            ultimoPostId = null
+            idUtenteCorrente = idUtente
 
             try {
                 val risultatoUtente = utenteRepository.caricaDettaglioUtente(idUtente)
 
                 utente = risultatoUtente.first
                 seguito = risultatoUtente.second
-                postUtente = postRepository.caricaPostDiUtente(idUtente)
+
+                val nuoviPost = postRepository.caricaPostDiUtente(
+                    idUtente = idUtente,
+                    maxPostId = null,
+                    limit = LIMITE_POST
+                )
+
+                postUtente = nuoviPost
+                ultimoPostId = nuoviPost.lastOrNull()?.idPost?.toIntOrNull()
+                finePost = nuoviPost.size < LIMITE_POST
+
             } catch (errore: Exception) {
                 messaggioErrore = errore.message ?: "Errore durante il caricamento dell'utente"
             } finally {
@@ -62,7 +92,44 @@ class DettaglioUtenteViewModel(
         }
     }
 
-    //FOLLOW O UNFOLLOW
+    fun caricaAltriPost() {
+        val idUtente = idUtenteCorrente ?: return
+        val ultimoId = ultimoPostId ?: return
+
+        if (caricamento || caricamentoAltriPost || finePost) {
+            return
+        }
+
+        viewModelScope.launch {
+            caricamentoAltriPost = true
+            messaggioErrore = null
+
+            try {
+                val nuoviPost = postRepository.caricaPostDiUtente(
+                    idUtente = idUtente,
+                    maxPostId = ultimoId - 1,
+                    limit = LIMITE_POST
+                )
+
+                if (nuoviPost.isEmpty()) {
+                    finePost = true
+                } else {
+                    postUtente = (postUtente + nuoviPost).distinctBy { it.idPost }
+                    ultimoPostId = nuoviPost.lastOrNull()?.idPost?.toIntOrNull()
+
+                    if (nuoviPost.size < LIMITE_POST) {
+                        finePost = true
+                    }
+                }
+
+            } catch (errore: Exception) {
+                messaggioErrore = errore.message ?: "Errore durante il caricamento di altri post"
+            } finally {
+                caricamentoAltriPost = false
+            }
+        }
+    }
+
     fun cambiaFollow(idUtente: Int) {
         viewModelScope.launch {
             messaggioErrore = null
@@ -93,6 +160,7 @@ class DettaglioUtenteViewModel(
                 }
 
                 followAggiornato = Pair(idUtente, nuovoStatoFollow)
+
             } catch (errore: Exception) {
                 messaggioErrore = errore.message ?: "Errore durante l'aggiornamento del follow"
             }
@@ -102,6 +170,4 @@ class DettaglioUtenteViewModel(
     fun followAggiornatoGestito() {
         followAggiornato = null
     }
-
-
 }

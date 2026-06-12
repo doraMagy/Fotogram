@@ -37,7 +37,11 @@ class PostRepository(
     }
 
     //ottenere i post di un utente specifico
-    suspend fun caricaPostDiUtente(idUtente: Int): List<Post> {
+    suspend fun caricaPostDiUtente(
+        idUtente: Int,
+        maxPostId: Int? = null,
+        limit: Int = 10
+    ): List<Post> {
         val sessionId = sessioneManager.leggiNumeroSessione()
             ?: throw Exception("Sessione non trovata")
 
@@ -49,7 +53,8 @@ class PostRepository(
         val idPost = remoteDataSource.caricaPostUtente(
             sessionId = sessionId,
             authorId = idUtente,
-            limit = 10
+            maxPostId = maxPostId,
+            limit = limit
         )
 
         return idPost.map { id ->
