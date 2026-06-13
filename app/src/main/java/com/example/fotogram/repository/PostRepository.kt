@@ -50,6 +50,15 @@ class PostRepository(
             userId = idUtente
         )
 
+        val nomeAutoreAggiornato = autore.username ?: "Utente $idUtente"
+        val seguitoAggiornato = autore.isYourFollowing
+
+        postDao.aggiornaDatiAutore(
+            idAutore = idUtente,
+            nomeAutore = nomeAutoreAggiornato,
+            seguito = seguitoAggiornato
+        )
+
         val idPost = remoteDataSource.caricaPostUtente(
             sessionId = sessionId,
             authorId = idUtente,
@@ -61,8 +70,8 @@ class PostRepository(
             caricaPostConCache(
                 sessionId = sessionId,
                 idPost = id,
-                nomeAutoreGiaCaricato = autore.username ?: "Utente $idUtente",
-                seguitoGiaCaricato = autore.isYourFollowing
+                nomeAutoreGiaCaricato = nomeAutoreAggiornato,
+                seguitoGiaCaricato = seguitoAggiornato
             )
         }
     }
@@ -115,6 +124,7 @@ class PostRepository(
         return postEntity.toPost()
     }
 
+    //caricamento dei post da Room
     private suspend fun caricaPostConCache(
         sessionId: String,
         idPost: Int,
@@ -125,7 +135,39 @@ class PostRepository(
 
         if (postInCache != null) {
             Log.d("PostRepository", "Post $idPost trovato in cache Room")
-            return postInCache.toPost()
+
+            val nomeAutoreAggiornato: String
+            val seguitoAggiornato: Boolean
+
+            if (nomeAutoreGiaCaricato != null && seguitoGiaCaricato != null) {
+                nomeAutoreAggiornato = nomeAutoreGiaCaricato
+                seguitoAggiornato = seguitoGiaCaricato
+            } else {
+                val autore = remoteDataSource.caricaUtente(
+                    sessionId = sessionId,
+                    userId = postInCache.idAutore
+                )
+
+                nomeAutoreAggiornato = autore.username ?: "Utente ${postInCache.idAutore}"
+                seguitoAggiornato = autore.isYourFollowing
+            }
+
+            val postAggiornato = postInCache.copy(
+                nomeAutore = nomeAutoreAggiornato,
+                seguito = seguitoAggiornato
+            )
+
+            postDao.salvaPost(postAggiornato)
+
+            postDao.aggiornaDatiAutore(
+                idAutore = postInCache.idAutore,
+                nomeAutore = nomeAutoreAggiornato,
+                seguito = seguitoAggiornato
+            )
+
+            Log.d("PostRepository", "Post $idPost aggiornato in cache con autore: $nomeAutoreAggiornato")
+
+            return postAggiornato.toPost()
         }
 
         Log.d("PostRepository", "Post $idPost non in cache, scarico dal server")
@@ -178,4 +220,11 @@ class PostRepository(
 
         Log.d("PostRepository", "Cache Room aggiornata: autore $idAutore seguito = $seguito")
     }
+
+    suspend fun caricaPostDaCache(idPost: Int): Post? {
+        val postEntity = postDao.cercaPost(idPost)
+
+        return postEntity?.toPost()
+    }
+
 }

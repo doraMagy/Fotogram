@@ -26,6 +26,13 @@ interface PostDao {
         seguito: Boolean
     )
 
+    @Query("UPDATE post SET nomeAutore = :nomeAutore, seguito = :seguito WHERE idAutore = :idAutore")
+    suspend fun aggiornaDatiAutore(
+        idAutore: Int,
+        nomeAutore: String,
+        seguito: Boolean
+    )
+
     @Query("DELETE FROM post")
     suspend fun eliminaTuttiPost()
 }

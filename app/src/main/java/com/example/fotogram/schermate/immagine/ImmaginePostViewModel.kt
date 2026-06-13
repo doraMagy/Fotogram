@@ -4,21 +4,51 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.fotogram.model.Post
+import com.example.fotogram.repository.PostRepository
+import kotlinx.coroutines.launch
 
-class ImmaginePostViewModel : ViewModel() {
+class ImmaginePostViewModel(
+    private val postRepository: PostRepository
+) : ViewModel() {
 
-    var idPost by mutableStateOf("")
+    var post by mutableStateOf<Post?>(null)
         private set
 
-    var descrizioneImmagine by mutableStateOf("")
+    var caricamento by mutableStateOf(false)
         private set
 
-    var immagineCaricata by mutableStateOf(false)
+    var messaggioErrore by mutableStateOf<String?>(null)
         private set
 
-    fun caricaImmagine(idPostRicevuto: String) {
-        idPost = idPostRicevuto
-        descrizioneImmagine = "Immagine del post $idPostRicevuto"
-        immagineCaricata = true
+    fun caricaPost(idPost: String) {
+        if (caricamento || post != null) {
+            return
+        }
+
+        val idPostIntero = idPost.toIntOrNull()
+
+        if (idPostIntero == null) {
+            messaggioErrore = "Post non valido"
+            return
+        }
+
+        viewModelScope.launch {
+            caricamento = true
+            messaggioErrore = null
+
+            try {
+                post = postRepository.caricaPostDaCache(idPostIntero)
+
+                if (post == null) {
+                    messaggioErrore = "Immagine non disponibile"
+                }
+            } catch (errore: Exception) {
+                messaggioErrore = errore.message ?: "Errore durante il caricamento dell'immagine"
+            } finally {
+                caricamento = false
+            }
+        }
     }
 }

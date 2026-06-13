@@ -26,6 +26,10 @@ import com.example.fotogram.model.Post
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.Image
+import androidx.compose.runtime.remember
+import androidx.compose.ui.layout.ContentScale
+import com.example.fotogram.util.base64ToImageBitmap
 
 @Composable
 fun SchedaPost(
@@ -36,6 +40,10 @@ fun SchedaPost(
     mostraAutoreCliccabile: Boolean = true,
     mostraBadge: Boolean = true
 ) {
+    val immaginePost = remember(post.immagineBase64) {
+        base64ToImageBitmap(post.immagineBase64)
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -124,7 +132,16 @@ fun SchedaPost(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Text("Immagine post")
+                if (immaginePost != null) {
+                    Image(
+                        bitmap = immaginePost,
+                        contentDescription = "Immagine del post",
+                        modifier = Modifier.fillMaxWidth(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text("Immagine non disponibile")
+                }
             }
 
             if (post.haPosizione) {
