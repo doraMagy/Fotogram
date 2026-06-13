@@ -1,6 +1,7 @@
 package com.example.fotogram.repository
 
 import com.example.fotogram.model.Utente
+import com.example.fotogram.rete.AggiornaImmagineUtenteRequest
 import com.example.fotogram.rete.AggiornaUtenteRequest
 import com.example.fotogram.rete.RemoteDataSource
 import com.example.fotogram.sessione.SessioneManager
@@ -10,7 +11,7 @@ class UtenteRepository(
     private val sessioneManager: SessioneManager
 ) {
 
-    suspend fun registraUtente(nomeUtente: String) {
+    suspend fun registraUtente(nomeUtente: String, immagineProfiloBase64: String) {
         val loginResponse = remoteDataSource.loginUtente()
 
         sessioneManager.salvaSessione(
@@ -24,6 +25,13 @@ class UtenteRepository(
                 username = nomeUtente,
                 bio = "",
                 dateOfBirth = null
+            )
+        )
+
+        remoteDataSource.aggiornaImmagineUtente(
+            sessionId = loginResponse.sessionId,
+            request = AggiornaImmagineUtenteRequest(
+                base64 = immagineProfiloBase64
             )
         )
     }
@@ -101,6 +109,23 @@ class UtenteRepository(
     suspend fun leggiUserId(): Int {
         return sessioneManager.leggiUserId()
             ?: throw Exception("Utente non trovato")
+    }
+
+    //legato a PUT image
+    suspend fun aggiornaImmagineProfilo(
+        immagineBase64: String
+    ): Utente {
+        val sessionId = sessioneManager.leggiNumeroSessione()
+            ?: throw Exception("Sessione non trovata")
+
+        val userResponse = remoteDataSource.aggiornaImmagineUtente(
+            sessionId = sessionId,
+            request = AggiornaImmagineUtenteRequest(
+                base64 = immagineBase64
+            )
+        )
+
+        return userResponse.toUtente()
     }
 
 }

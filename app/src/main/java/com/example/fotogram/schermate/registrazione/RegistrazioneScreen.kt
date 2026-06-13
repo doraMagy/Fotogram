@@ -28,6 +28,17 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.fotogram.repository.UtenteRepository
 import com.example.fotogram.rete.RemoteDataSource
 import com.example.fotogram.sessione.SessioneManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import com.example.fotogram.util.base64ToImageBitmap
+import com.example.fotogram.util.uriToBase64ConLimite
 
 @Composable
 fun RegistrazioneScreen(
@@ -48,12 +59,40 @@ fun RegistrazioneScreen(
         }
     )
 
+    val launcherImmagineProfilo = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            try {
+                val base64 = uriToBase64ConLimite(
+                    context = context,
+                    uri = uri
+                )
+
+                viewModel.aggiornaImmagineProfilo(base64)
+            } catch (errore: Exception) {
+                viewModel.segnalaErroreImmagine(
+                    errore.message ?: "Errore durante la selezione dell'immagine"
+                )
+            }
+        }
+    }
+
     val nomeUtente = viewModel.nomeUtente
     val immagineProfiloSelezionata = viewModel.immagineProfiloSelezionata
     val registrazionePossibile = viewModel.registrazionePossibile
     val registrazioneCompletata = viewModel.registrazioneCompletata
     val messaggioErrore = viewModel.messaggioErrore
     val caricamento = viewModel.caricamento
+    val immagineProfiloBase64 = viewModel.immagineProfiloBase64
+    val erroreNomeUtente = viewModel.erroreNomeUtente
+    val erroreImmagineProfilo = viewModel.erroreImmagineProfilo
+
+    val anteprimaImmagineProfilo = remember(immagineProfiloBase64) {
+        base64ToImageBitmap(immagineProfiloBase64)
+    }
+
+    var registrazioneTentata by remember { mutableStateOf(false) }
 
     LaunchedEffect(registrazioneCompletata) {
         if (registrazioneCompletata) {
@@ -90,24 +129,51 @@ fun RegistrazioneScreen(
             singleLine = true
         )
 
+        if (registrazioneTentata && erroreNomeUtente != null) {
+            Text(
+                text = erroreNomeUtente,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
         BoxImmagineProfiloRegistrazione(
             immagineProfiloSelezionata = immagineProfiloSelezionata,
-            onClick = viewModel::selezionaImmagineProfilo
+            anteprimaImmagineProfilo = anteprimaImmagineProfilo,
+            onClick = {
+                launcherImmagineProfilo.launch("image/*")
+            }
         )
 
-        if (messaggioErrore != null) {
+        if (registrazioneTentata && erroreImmagineProfilo != null) {
+            Text(
+                text = erroreImmagineProfilo,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        if (
+            messaggioErrore != null &&
+            messaggioErrore != erroreNomeUtente &&
+            messaggioErrore != erroreImmagineProfilo
+        ) {
             Text(
                 text = messaggioErrore,
                 color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth()
             )
         }
 
         Button(
             onClick = {
+                registrazioneTentata = true
                 viewModel.completaRegistrazione()
             },
-            enabled = registrazionePossibile,
+            enabled = !caricamento,
             modifier = Modifier.fillMaxWidth()
         ) {
             if (caricamento) {
@@ -122,6 +188,7 @@ fun RegistrazioneScreen(
 @Composable
 fun BoxImmagineProfiloRegistrazione(
     immagineProfiloSelezionata: Boolean,
+    anteprimaImmagineProfilo: ImageBitmap?,
     onClick: () -> Unit
 ) {
     Box(
@@ -135,7 +202,14 @@ fun BoxImmagineProfiloRegistrazione(
             },
         contentAlignment = Alignment.Center
     ) {
-        if (immagineProfiloSelezionata) {
+        if (anteprimaImmagineProfilo != null) {
+            Image(
+                bitmap = anteprimaImmagineProfilo,
+                contentDescription = "Anteprima immagine profilo",
+                modifier = Modifier.fillMaxWidth(),
+                contentScale = ContentScale.Crop
+            )
+        } else if (immagineProfiloSelezionata) {
             Text("Immagine profilo selezionata")
         } else {
             Text("Tocca per selezionare l'immagine profilo")

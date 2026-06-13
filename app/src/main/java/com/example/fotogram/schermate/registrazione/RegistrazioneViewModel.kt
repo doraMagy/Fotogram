@@ -18,6 +18,9 @@ class RegistrazioneViewModel(
     var immagineProfiloSelezionata by mutableStateOf(false)
         private set
 
+    var immagineProfiloBase64 by mutableStateOf<String?>(null)
+        private set
+
     var registrazioneCompletata by mutableStateOf(false)
         private set
 
@@ -27,26 +30,54 @@ class RegistrazioneViewModel(
     var caricamento by mutableStateOf(false)
         private set
 
-    val nomeValido: Boolean
-        get() = nomeUtente.isNotBlank() && nomeUtente.length <= 15
+    val erroreNomeUtente: String?
+        get() = when {
+            nomeUtente.isBlank() -> "Inserisci un nome utente"
+            nomeUtente.length > 15 -> "Il nome utente può avere al massimo 15 caratteri"
+            else -> null
+        }
+
+    val erroreImmagineProfilo: String?
+        get() = if (immagineProfiloBase64 == null) {
+            "Seleziona un'immagine profilo"
+        } else {
+            null
+        }
+
+    val messaggioValidazione: String?
+        get() = erroreNomeUtente ?: erroreImmagineProfilo
 
     val registrazionePossibile: Boolean
-        get() = nomeValido && immagineProfiloSelezionata && !caricamento
+        get() = messaggioValidazione == null && !caricamento
 
     fun aggiornaNomeUtente(nuovoNome: String) {
         if (nuovoNome.length <= 15) {
             nomeUtente = nuovoNome
+            messaggioErrore = null
         }
     }
 
-    fun selezionaImmagineProfilo() {
+    fun aggiornaImmagineProfilo(base64: String) {
+        immagineProfiloBase64 = base64
         immagineProfiloSelezionata = true
+        messaggioErrore = null
+    }
+
+    fun segnalaErroreImmagine(messaggio: String) {
+        immagineProfiloBase64 = null
+        immagineProfiloSelezionata = false
+        messaggioErrore = messaggio
     }
 
     fun completaRegistrazione() {
-        if (!registrazionePossibile) {
+        val erroreValidazione = messaggioValidazione
+
+        if (erroreValidazione != null) {
+            messaggioErrore = erroreValidazione
             return
         }
+
+        val immagineDaSalvare = immagineProfiloBase64 ?: return
 
         viewModelScope.launch {
             caricamento = true
@@ -54,8 +85,10 @@ class RegistrazioneViewModel(
 
             try {
                 utenteRepository.registraUtente(
-                    nomeUtente = nomeUtente
+                    nomeUtente = nomeUtente,
+                    immagineProfiloBase64 = immagineDaSalvare
                 )
+
                 registrazioneCompletata = true
             } catch (errore: Exception) {
                 messaggioErrore = errore.message ?: "Errore durante la registrazione"

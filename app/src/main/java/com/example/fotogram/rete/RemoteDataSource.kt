@@ -211,5 +211,26 @@ class RemoteDataSource(
         }
     }
 
-    //PUT user image -> manca ancora
+    //PUT user image
+    suspend fun aggiornaImmagineUtente(
+        sessionId: String,
+        request: AggiornaImmagineUtenteRequest
+    ): UserResponse {
+        val response = client.put("${KtorClient.BASE_URL}user/image") {
+            headers {
+                append("x-session-id", sessionId)
+            }
+
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }
+
+        if (response.status.isSuccess()) {
+            return response.body()
+        } else {
+            val errore: ErrorResponse = response.body()
+            throw Exception(errore.message)
+        }
+    }
+
 }
