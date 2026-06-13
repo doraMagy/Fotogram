@@ -78,4 +78,13 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
 
+    //MapBox
+    implementation("com.mapbox.maps:android-ndk27:11.25.0")
+    implementation("com.mapbox.extension:maps-compose-ndk27:11.25.0")
+
+    //per avere posizone dell'utente
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+
+
 }
