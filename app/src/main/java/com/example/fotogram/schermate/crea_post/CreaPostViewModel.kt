@@ -18,6 +18,9 @@ class CreaPostViewModel(
     var immagineSelezionata by mutableStateOf(false)
         private set
 
+    var immagineBase64 by mutableStateOf<String?>(null)
+        private set
+
     var posizioneSelezionata by mutableStateOf(false)
         private set
 
@@ -39,7 +42,7 @@ class CreaPostViewModel(
     val pubblicazionePossibile: Boolean
         get() = testoPost.isNotBlank() &&
                 testoPost.length <= 100 &&
-                immagineSelezionata &&
+                immagineBase64 != null &&
                 !caricamento
 
     fun aggiornaTestoPost(nuovoTesto: String) {
@@ -48,8 +51,16 @@ class CreaPostViewModel(
         }
     }
 
-    fun selezionaImmagine() {
+    fun aggiornaImmagine(base64: String) {
+        immagineBase64 = base64
         immagineSelezionata = true
+        messaggioErrore = null
+    }
+
+    fun segnalaErroreImmagine(messaggio: String) {
+        immagineBase64 = null
+        immagineSelezionata = false
+        messaggioErrore = messaggio
     }
 
     fun aggiornaPosizione(
@@ -68,7 +79,9 @@ class CreaPostViewModel(
     }
 
     fun pubblicaPost() {
-        if (!pubblicazionePossibile) {
+        val immagineDaPubblicare = immagineBase64
+
+        if (!pubblicazionePossibile || immagineDaPubblicare == null) {
             return
         }
 
@@ -79,7 +92,7 @@ class CreaPostViewModel(
             try {
                 postRepository.creaPost(
                     testo = testoPost,
-                    immagineBase64 = IMMAGINE_BASE64_TEMPORANEA,
+                    immagineBase64 = immagineDaPubblicare,
                     latitudine = latitudine,
                     longitudine = longitudine
                 )
@@ -91,10 +104,5 @@ class CreaPostViewModel(
                 caricamento = false
             }
         }
-    }
-
-    companion object {
-        private const val IMMAGINE_BASE64_TEMPORANEA =
-            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII="
     }
 }

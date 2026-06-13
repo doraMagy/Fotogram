@@ -32,6 +32,13 @@ import com.example.fotogram.database.AppDatabase
 import com.example.fotogram.repository.PostRepository
 import com.example.fotogram.rete.RemoteDataSource
 import com.example.fotogram.sessione.SessioneManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.runtime.remember
+import androidx.compose.ui.layout.ContentScale
+import com.example.fotogram.util.base64ToImageBitmap
+import com.example.fotogram.util.uriToBase64ConLimite
 
 @Composable
 fun CreaPostScreen(
@@ -54,6 +61,25 @@ fun CreaPostScreen(
         }
     )
 
+    val launcherImmagine = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            try {
+                val base64 = uriToBase64ConLimite(
+                    context = context,
+                    uri = uri
+                )
+
+                viewModel.aggiornaImmagine(base64)
+            } catch (errore: Exception) {
+                viewModel.segnalaErroreImmagine(
+                    errore.message ?: "Errore durante la selezione dell'immagine"
+                )
+            }
+        }
+    }
+
     val testoPost = viewModel.testoPost
     val immagineSelezionata = viewModel.immagineSelezionata
     val posizioneSelezionata = viewModel.posizioneSelezionata
@@ -61,6 +87,11 @@ fun CreaPostScreen(
     val postPubblicato = viewModel.postPubblicato
     val messaggioErrore = viewModel.messaggioErrore
     val caricamento = viewModel.caricamento
+    val immagineBase64 = viewModel.immagineBase64
+
+    val anteprimaImmagine = remember(immagineBase64) {
+        base64ToImageBitmap(immagineBase64)
+    }
 
     LaunchedEffect(postPubblicato) {
         if (postPubblicato) {
@@ -81,7 +112,10 @@ fun CreaPostScreen(
 
         BoxImmaginePost(
             immagineSelezionata = immagineSelezionata,
-            onClick = viewModel::selezionaImmagine
+            anteprimaImmagine = anteprimaImmagine,
+            onClick = {
+                launcherImmagine.launch("image/*")
+            }
         )
 
         Text(
@@ -109,7 +143,7 @@ fun CreaPostScreen(
         )
 
         Text(
-            text = "Posizione",
+            text = "Posizione (facoltativo)",
             style = MaterialTheme.typography.titleSmall
         )
 
@@ -164,6 +198,7 @@ fun CreaPostScreen(
 @Composable
 fun BoxImmaginePost(
     immagineSelezionata: Boolean,
+    anteprimaImmagine: androidx.compose.ui.graphics.ImageBitmap?,
     onClick: () -> Unit
 ) {
     Box(
@@ -177,8 +212,15 @@ fun BoxImmaginePost(
             },
         contentAlignment = Alignment.Center
     ) {
-        if (immagineSelezionata) {
-            Text("Anteprima immagine selezionata")
+        if (anteprimaImmagine != null) {
+            Image(
+                bitmap = anteprimaImmagine,
+                contentDescription = "Anteprima immagine selezionata",
+                modifier = Modifier.fillMaxWidth(),
+                contentScale = ContentScale.Crop
+            )
+        } else if (immagineSelezionata) {
+            Text("Immagine selezionata")
         } else {
             Text("Tocca per selezionare un'immagine")
         }
