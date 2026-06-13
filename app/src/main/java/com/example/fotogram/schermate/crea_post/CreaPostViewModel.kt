@@ -62,6 +62,7 @@ class CreaPostViewModel(
     fun aggiornaTestoPost(nuovoTesto: String) {
         if (nuovoTesto.length <= 100) {
             testoPost = nuovoTesto
+            messaggioErrore = null
         }
     }
 
@@ -96,7 +97,6 @@ class CreaPostViewModel(
         val erroreValidazione = messaggioValidazione
 
         if (erroreValidazione != null) {
-            messaggioErrore = erroreValidazione
             return
         }
 

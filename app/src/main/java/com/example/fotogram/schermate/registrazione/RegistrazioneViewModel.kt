@@ -73,7 +73,6 @@ class RegistrazioneViewModel(
         val erroreValidazione = messaggioValidazione
 
         if (erroreValidazione != null) {
-            messaggioErrore = erroreValidazione
             return
         }
 

@@ -21,6 +21,19 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.fotogram.repository.UtenteRepository
 import com.example.fotogram.rete.RemoteDataSource
 import com.example.fotogram.sessione.SessioneManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import com.example.fotogram.util.base64ToImageBitmap
+import com.example.fotogram.util.uriToBase64ConLimite
 
 @Composable
 fun ModificaProfiloScreen(
@@ -41,6 +54,25 @@ fun ModificaProfiloScreen(
         }
     )
 
+    val launcherImmagineProfilo = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            try {
+                val base64 = uriToBase64ConLimite(
+                    context = context,
+                    uri = uri
+                )
+
+                viewModel.aggiornaImmagineProfilo(base64)
+            } catch (errore: Exception) {
+                viewModel.segnalaErroreImmagine(
+                    errore.message ?: "Errore durante la selezione dell'immagine"
+                )
+            }
+        }
+    }
+
     val nomeUtente = viewModel.nomeUtente
     val bio = viewModel.bio
     val dataNascita = viewModel.dataNascita
@@ -49,6 +81,14 @@ fun ModificaProfiloScreen(
     val caricamento = viewModel.caricamento
     val messaggioErrore = viewModel.messaggioErrore
     val salvataggioCompletato = viewModel.salvataggioCompletato
+    val imgProfilo = viewModel.imgProfilo
+    val nuovaImgProfilo = viewModel.nuovaImgProfilo
+
+    val immagineDaMostrare = nuovaImgProfilo ?: imgProfilo
+
+    val anteprimaImmagineProfilo = remember(immagineDaMostrare) {
+        base64ToImageBitmap(immagineDaMostrare)
+    }
 
     LaunchedEffect(Unit) {
         viewModel.caricaProfilo()
@@ -70,6 +110,39 @@ fun ModificaProfiloScreen(
         ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Text(
+            text = "Immagine profilo",
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+                .clickable {
+                    launcherImmagineProfilo.launch("image/*")
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            if (anteprimaImmagineProfilo != null) {
+                Image(
+                    bitmap = anteprimaImmagineProfilo,
+                    contentDescription = "Immagine profilo",
+                    modifier = Modifier.size(120.dp),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Text("IMG")
+            }
+        }
+
+        Text(
+            text = "Tocca l'immagine per cambiarla",
+            style = MaterialTheme.typography.bodySmall
+        )
+
         OutlinedTextField(
             value = nomeUtente,
             onValueChange = viewModel::aggiornaNomeUtente,

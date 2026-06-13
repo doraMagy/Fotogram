@@ -194,11 +194,7 @@ fun CreaPostScreen(
             modifier = Modifier.height(8.dp)
         )
 
-        if (
-            messaggioErrore != null &&
-            messaggioErrore != erroreImmagine &&
-            messaggioErrore != erroreTesto
-        ) {
+        if (messaggioErrore != null) {
             Text(
                 text = messaggioErrore,
                 color = MaterialTheme.colorScheme.error,

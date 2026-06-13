@@ -32,6 +32,12 @@ class ModificaProfiloViewModel(
     var messaggioErrore by mutableStateOf<String?>(null)
         private set
 
+    var imgProfilo by mutableStateOf<String?>(null)
+        private set
+
+    var nuovaImgProfilo by mutableStateOf<String?>(null)
+        private set
+
     val datiValidi: Boolean
         get() = nomeUtente.isNotBlank() &&
                 nomeUtente.length <= 15 &&
@@ -50,6 +56,7 @@ class ModificaProfiloViewModel(
                 nomeUtente = utente.nomeUtente
                 bio = utente.bio
                 dataNascita = utente.dataNascita
+                imgProfilo = utente.immagineProfiloBase64
             } catch (errore: Exception) {
                 messaggioErrore = errore.message ?: "Errore durante il caricamento del profilo"
             } finally {
@@ -74,6 +81,15 @@ class ModificaProfiloViewModel(
         dataNascita = nuovaData
     }
 
+    fun aggiornaImmagineProfilo(base64: String) {
+        nuovaImgProfilo = base64
+        messaggioErrore = null
+    }
+
+    fun segnalaErroreImmagine(messaggio: String) {
+        messaggioErrore = messaggio
+    }
+
     fun salvaProfilo() {
         if (!datiValidi) {
             return
@@ -89,6 +105,10 @@ class ModificaProfiloViewModel(
                     bio = bio,
                     dataNascita = dataNascita.ifBlank { null }
                 )
+
+                nuovaImgProfilo?.let { immagine ->
+                    utenteRepository.aggiornaImmagineProfilo(immagine)
+                }
 
                 salvataggioCompletato = true
             } catch (errore: Exception) {
