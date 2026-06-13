@@ -243,12 +243,12 @@ fun IntestazioneProfilo(
 
                     StatisticaProfilo(
                         valore = utente.numeroFollower,
-                        etichetta = "Follower"
+                        etichetta = "Seguaci"
                     )
 
                     StatisticaProfilo(
                         valore = utente.numeroFollowing,
-                        etichetta = "Following"
+                        etichetta = "Seguiti"
                     )
                 }
             }

@@ -134,11 +134,25 @@ fun GrafoNavigazione() {
                 )
             }
 
-            composable(Schermata.CreaPost.route) {
+            composable(Schermata.CreaPost.route) { creaPostBackStackEntry ->
+
+                val latitudineSelezionata = creaPostBackStackEntry
+                    .savedStateHandle
+                    .get<Double>("latitudineSelezionata")
+
+                val longitudineSelezionata = creaPostBackStackEntry
+                    .savedStateHandle
+                    .get<Double>("longitudineSelezionata")
+
                 CreaPostScreen(
                     onPostPubblicato = navigatore::vaiAlProfilo,
-                    //navigatore::vaiAlProfilo o navigatore::vaiAllaBacheca
-                    onSelezionaPosizione = navigatore::vaiASelezionaPosizione
+                    onSelezionaPosizione = navigatore::vaiASelezionaPosizione,
+                    latitudineSelezionata = latitudineSelezionata,
+                    longitudineSelezionata = longitudineSelezionata,
+                    onPosizioneSelezionataGestita = {
+                        creaPostBackStackEntry.savedStateHandle.remove<Double>("latitudineSelezionata")
+                        creaPostBackStackEntry.savedStateHandle.remove<Double>("longitudineSelezionata")
+                    }
                 )
             }
 
@@ -211,7 +225,17 @@ fun GrafoNavigazione() {
 
             composable(Schermata.SelezionaPosizione.route) {
                 SelezionaPosizioneScreen(
-                    onConfermaPosizione = navigatore::tornaIndietro
+                    onConfermaPosizione = { latitudine, longitudine ->
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("latitudineSelezionata", latitudine)
+
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("longitudineSelezionata", longitudine)
+
+                        navigatore.tornaIndietro()
+                    }
                 )
             }
 

@@ -244,12 +244,12 @@ fun IntestazioneDettaglioUtente(
 
                     StatisticaDettaglioUtente(
                         valore = utente.numeroFollower,
-                        etichetta = "Follower"
+                        etichetta = "Seguaci"
                     )
 
                     StatisticaDettaglioUtente(
                         valore = utente.numeroFollowing,
-                        etichetta = "Following"
+                        etichetta = "Seguiti"
                     )
                 }
             }

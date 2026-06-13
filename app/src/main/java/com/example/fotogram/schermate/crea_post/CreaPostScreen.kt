@@ -35,6 +35,7 @@ import com.example.fotogram.sessione.SessioneManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.remember
 import androidx.compose.ui.layout.ContentScale
 import com.example.fotogram.util.base64ToImageBitmap
@@ -47,6 +48,9 @@ import androidx.compose.runtime.setValue
 fun CreaPostScreen(
     onPostPubblicato: () -> Unit,
     onSelezionaPosizione: () -> Unit,
+    latitudineSelezionata: Double?,
+    longitudineSelezionata: Double?,
+    onPosizioneSelezionataGestita: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -93,6 +97,8 @@ fun CreaPostScreen(
     val immagineBase64 = viewModel.immagineBase64
     val erroreImmagine = viewModel.erroreImmagine
     val erroreTesto = viewModel.erroreTesto
+    val latitudine = viewModel.latitudine
+    val longitudine = viewModel.longitudine
 
     val anteprimaImmagine = remember(immagineBase64) {
         base64ToImageBitmap(immagineBase64)
@@ -101,6 +107,17 @@ fun CreaPostScreen(
     LaunchedEffect(postPubblicato) {
         if (postPubblicato) {
             onPostPubblicato()
+        }
+    }
+
+    LaunchedEffect(latitudineSelezionata, longitudineSelezionata) {
+        if (latitudineSelezionata != null && longitudineSelezionata != null) {
+            viewModel.aggiornaPosizione(
+                lat = latitudineSelezionata,
+                lon = longitudineSelezionata
+            )
+
+            onPosizioneSelezionataGestita()
         }
     }
 
@@ -170,24 +187,43 @@ fun CreaPostScreen(
             style = MaterialTheme.typography.titleSmall
         )
 
-        OutlinedButton(
-            onClick = {
-                onSelezionaPosizione()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            if (posizioneSelezionata) {
-                Text("Modifica posizione")
-            } else {
+        if (!posizioneSelezionata) {
+            OutlinedButton(
+                onClick = {
+                    onSelezionaPosizione()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text("Aggiungi posizione")
             }
-        }
-
-        if (posizioneSelezionata) {
+        } else {
             Text(
-                text = "Posizione selezionata",
-                style = MaterialTheme.typography.bodySmall
+                text = "Latitudine: ${latitudine ?: "-"}, Longitudine: ${longitudine ?: "-"}",
+                style = MaterialTheme.typography.bodyMedium
             )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(
+                    onClick = {
+                        onSelezionaPosizione()
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Modifica")
+                }
+
+                OutlinedButton(
+                    onClick = {
+                        viewModel.rimuoviPosizione()
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Rimuovi")
+                }
+            }
         }
 
         Spacer(
