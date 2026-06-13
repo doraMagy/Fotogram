@@ -39,6 +39,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.layout.ContentScale
 import com.example.fotogram.util.base64ToImageBitmap
 import com.example.fotogram.util.uriToBase64ConLimite
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @Composable
 fun CreaPostScreen(
@@ -88,6 +91,8 @@ fun CreaPostScreen(
     val messaggioErrore = viewModel.messaggioErrore
     val caricamento = viewModel.caricamento
     val immagineBase64 = viewModel.immagineBase64
+    val erroreImmagine = viewModel.erroreImmagine
+    val erroreTesto = viewModel.erroreTesto
 
     val anteprimaImmagine = remember(immagineBase64) {
         base64ToImageBitmap(immagineBase64)
@@ -98,6 +103,8 @@ fun CreaPostScreen(
             onPostPubblicato()
         }
     }
+
+    var pubblicazioneTentata by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -117,6 +124,14 @@ fun CreaPostScreen(
                 launcherImmagine.launch("image/*")
             }
         )
+
+        if (pubblicazioneTentata && erroreImmagine != null) {
+            Text(
+                text = erroreImmagine,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
 
         Text(
             text = "Descrizione",
@@ -141,6 +156,14 @@ fun CreaPostScreen(
             text = "${testoPost.length}/100 caratteri",
             style = MaterialTheme.typography.bodySmall
         )
+
+        if (pubblicazioneTentata && erroreTesto != null) {
+            Text(
+                text = erroreTesto,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
 
         Text(
             text = "Posizione (facoltativo)",
@@ -171,7 +194,11 @@ fun CreaPostScreen(
             modifier = Modifier.height(8.dp)
         )
 
-        if (messaggioErrore != null) {
+        if (
+            messaggioErrore != null &&
+            messaggioErrore != erroreImmagine &&
+            messaggioErrore != erroreTesto
+        ) {
             Text(
                 text = messaggioErrore,
                 color = MaterialTheme.colorScheme.error,
@@ -181,9 +208,10 @@ fun CreaPostScreen(
 
         Button(
             onClick = {
+                pubblicazioneTentata = true
                 viewModel.pubblicaPost()
             },
-            enabled = pubblicazionePossibile,
+            enabled = !caricamento,
             modifier = Modifier.fillMaxWidth()
         ) {
             if (caricamento) {

@@ -6,5 +6,6 @@ data class Utente(
     val dataNascita: String,
     val numeroFollower: Int,
     val numeroFollowing: Int,
-    val numeroPost: Int
+    val numeroPost: Int,
+    val immagineProfiloBase64: String? = null
 )

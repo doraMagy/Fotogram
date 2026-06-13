@@ -71,7 +71,8 @@ class PostRepository(
                 sessionId = sessionId,
                 idPost = id,
                 nomeAutoreGiaCaricato = nomeAutoreAggiornato,
-                seguitoGiaCaricato = seguitoAggiornato
+                seguitoGiaCaricato = seguitoAggiornato,
+                immagineProfiloAutoreGiaCaricata = autore.profilePicture
             )
         }
     }
@@ -129,7 +130,8 @@ class PostRepository(
         sessionId: String,
         idPost: Int,
         nomeAutoreGiaCaricato: String? = null,
-        seguitoGiaCaricato: Boolean? = null
+        seguitoGiaCaricato: Boolean? = null,
+        immagineProfiloAutoreGiaCaricata: String? = null
     ): Post {
         val postInCache = postDao.cercaPost(idPost)
 
@@ -138,10 +140,12 @@ class PostRepository(
 
             val nomeAutoreAggiornato: String
             val seguitoAggiornato: Boolean
+            val immagineProfiloAutoreAggiornata: String?
 
             if (nomeAutoreGiaCaricato != null && seguitoGiaCaricato != null) {
                 nomeAutoreAggiornato = nomeAutoreGiaCaricato
                 seguitoAggiornato = seguitoGiaCaricato
+                immagineProfiloAutoreAggiornata = immagineProfiloAutoreGiaCaricata
             } else {
                 val autore = remoteDataSource.caricaUtente(
                     sessionId = sessionId,
@@ -150,6 +154,7 @@ class PostRepository(
 
                 nomeAutoreAggiornato = autore.username ?: "Utente ${postInCache.idAutore}"
                 seguitoAggiornato = autore.isYourFollowing
+                immagineProfiloAutoreAggiornata = autore.profilePicture
             }
 
             val postAggiornato = postInCache.copy(
@@ -167,7 +172,9 @@ class PostRepository(
 
             Log.d("PostRepository", "Post $idPost aggiornato in cache con autore: $nomeAutoreAggiornato")
 
-            return postAggiornato.toPost()
+            return postAggiornato.toPost().copy(
+                immagineProfiloAutoreBase64 = immagineProfiloAutoreAggiornata
+            )
         }
 
         Log.d("PostRepository", "Post $idPost non in cache, scarico dal server")
@@ -179,10 +186,12 @@ class PostRepository(
 
         val nomeAutore: String
         val seguito: Boolean
+        val immagineProfiloAutore: String?
 
         if (nomeAutoreGiaCaricato != null && seguitoGiaCaricato != null) {
             nomeAutore = nomeAutoreGiaCaricato
             seguito = seguitoGiaCaricato
+            immagineProfiloAutore = immagineProfiloAutoreGiaCaricata
 
             Log.d("PostRepository", "Autore del post $idPost già caricato: $nomeAutore")
         } else {
@@ -193,6 +202,7 @@ class PostRepository(
 
             nomeAutore = autore.username ?: "Utente ${postResponse.authorId}"
             seguito = autore.isYourFollowing
+            immagineProfiloAutore = autore.profilePicture
 
             Log.d("PostRepository", "Autore del post $idPost scaricato: $nomeAutore")
         }
@@ -206,7 +216,9 @@ class PostRepository(
 
         Log.d("PostRepository", "Post $idPost salvato in Room")
 
-        return postEntity.toPost()
+        return postEntity.toPost().copy(
+            immagineProfiloAutoreBase64 = immagineProfiloAutore
+        )
     }
 
     suspend fun aggiornaSeguitoAutoreInCache(

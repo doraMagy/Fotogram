@@ -39,11 +39,25 @@ class CreaPostViewModel(
     var postPubblicato by mutableStateOf(false)
         private set
 
+    val erroreImmagine: String?
+        get() = if (immagineBase64 == null) {
+            "Seleziona un'immagine per pubblicare il post"
+        } else {
+            null
+        }
+
+    val erroreTesto: String?
+        get() = when {
+            testoPost.isBlank() -> "Scrivi una descrizione per pubblicare il post"
+            testoPost.length > 100 -> "La descrizione può avere al massimo 100 caratteri"
+            else -> null
+        }
+
+    val messaggioValidazione: String?
+        get() = erroreImmagine ?: erroreTesto
+
     val pubblicazionePossibile: Boolean
-        get() = testoPost.isNotBlank() &&
-                testoPost.length <= 100 &&
-                immagineBase64 != null &&
-                !caricamento
+        get() = messaggioValidazione == null && !caricamento
 
     fun aggiornaTestoPost(nuovoTesto: String) {
         if (nuovoTesto.length <= 100) {
@@ -79,11 +93,14 @@ class CreaPostViewModel(
     }
 
     fun pubblicaPost() {
-        val immagineDaPubblicare = immagineBase64
+        val erroreValidazione = messaggioValidazione
 
-        if (!pubblicazionePossibile || immagineDaPubblicare == null) {
+        if (erroreValidazione != null) {
+            messaggioErrore = erroreValidazione
             return
         }
+
+        val immagineDaPubblicare = immagineBase64 ?: return
 
         viewModelScope.launch {
             caricamento = true

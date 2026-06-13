@@ -11,6 +11,7 @@ fun UserResponse.toUtente(): Utente {
         dataNascita = dateOfBirth ?: "",
         numeroFollower = followersCount,
         numeroFollowing = followingCount,
-        numeroPost = postsCount
+        numeroPost = postsCount,
+        immagineProfiloBase64 = profilePicture
     )
 }

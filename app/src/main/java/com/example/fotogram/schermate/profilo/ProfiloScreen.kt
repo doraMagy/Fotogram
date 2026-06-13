@@ -41,6 +41,9 @@ import com.example.fotogram.sessione.SessioneManager
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import com.example.fotogram.util.base64ToImageBitmap
 
 @Composable
 fun ProfiloScreen(
@@ -181,6 +184,10 @@ fun IntestazioneProfilo(
     utente: Utente,
     onModificaProfilo: () -> Unit
 ) {
+    val immagineProfilo = remember(utente.immagineProfiloBase64) {
+        base64ToImageBitmap(utente.immagineProfiloBase64)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -197,7 +204,16 @@ fun IntestazioneProfilo(
                     .background(MaterialTheme.colorScheme.secondaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Text("IMG")
+                if (immagineProfilo != null) {
+                    Image(
+                        bitmap = immagineProfilo,
+                        contentDescription = "Immagine profilo",
+                        modifier = Modifier.size(92.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text("IMG")
+                }
             }
 
             Spacer(

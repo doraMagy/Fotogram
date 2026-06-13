@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import android.util.Log
 import java.io.ByteArrayOutputStream
 
 fun base64ToImageBitmap(base64: String?): ImageBitmap? {
@@ -56,6 +57,7 @@ fun uriToBase64ConLimite(
             )
 
             if (base64.length <= LIMITE_BASE64_IMMAGINE) {
+                Log.d("ImmagineUtils", "Immagine convertita: ${base64.length} caratteri, dimensione max $dimensioneMassima, qualità $qualita")
                 return base64
             }
         }

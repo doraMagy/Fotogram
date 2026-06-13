@@ -44,6 +44,10 @@ fun SchedaPost(
         base64ToImageBitmap(post.immagineBase64)
     }
 
+    val immagineProfiloAutore = remember(post.immagineProfiloAutoreBase64) {
+        base64ToImageBitmap(post.immagineProfiloAutoreBase64)
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -78,10 +82,19 @@ fun SchedaPost(
                             .background(MaterialTheme.colorScheme.secondaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "IMG",
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                        if (immagineProfiloAutore != null) {
+                            Image(
+                                bitmap = immagineProfiloAutore,
+                                contentDescription = "Immagine profilo autore",
+                                modifier = Modifier.size(40.dp),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Text(
+                                text = "IMG",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                     }
 
                     Spacer(
