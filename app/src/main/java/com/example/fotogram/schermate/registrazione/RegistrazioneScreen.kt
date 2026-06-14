@@ -39,6 +39,8 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import com.example.fotogram.util.base64ToImageBitmap
 import com.example.fotogram.util.uriToBase64ConLimite
+import com.example.fotogram.util.OfflineBanner
+import com.example.fotogram.util.rememberStatoConnessione
 
 @Composable
 fun RegistrazioneScreen(
@@ -80,7 +82,6 @@ fun RegistrazioneScreen(
 
     val nomeUtente = viewModel.nomeUtente
     val immagineProfiloSelezionata = viewModel.immagineProfiloSelezionata
-    val registrazionePossibile = viewModel.registrazionePossibile
     val registrazioneCompletata = viewModel.registrazioneCompletata
     val messaggioErrore = viewModel.messaggioErrore
     val caricamento = viewModel.caricamento
@@ -94,6 +95,12 @@ fun RegistrazioneScreen(
 
     var registrazioneTentata by remember { mutableStateOf(false) }
 
+    val connesso = rememberStatoConnessione()
+    val erroreConnessione = messaggioErrore?.contains("timeout", ignoreCase = true) == true ||
+            messaggioErrore?.contains("Unable to resolve host", ignoreCase = true) == true ||
+            messaggioErrore?.contains("Failed to connect", ignoreCase = true) == true ||
+            messaggioErrore?.contains("connection", ignoreCase = true) == true
+
     LaunchedEffect(registrazioneCompletata) {
         if (registrazioneCompletata) {
             onRegistrazioneCompletata()
@@ -101,85 +108,103 @@ fun RegistrazioneScreen(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(
-            space = 20.dp,
-            alignment = Alignment.CenterVertically
-        ),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier.fillMaxSize()
     ) {
-        Text(
-            text = "FOTOGRAM",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
-
-        OutlinedTextField(
-            value = nomeUtente,
-            onValueChange = viewModel::aggiornaNomeUtente,
-            label = {
-                Text("Username")
-            },
-            supportingText = {
-                Text("${nomeUtente.length}/15 caratteri")
-            },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        if (registrazioneTentata && erroreNomeUtente != null) {
-            Text(
-                text = erroreNomeUtente,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.fillMaxWidth()
-            )
+        if (!connesso || erroreConnessione) {
+            OfflineBanner()
         }
 
-        BoxImmagineProfiloRegistrazione(
-            immagineProfiloSelezionata = immagineProfiloSelezionata,
-            anteprimaImmagineProfilo = anteprimaImmagineProfilo,
-            onClick = {
-                launcherImmagineProfilo.launch("image/*")
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(
+                space = 20.dp,
+                alignment = Alignment.CenterVertically
+            ),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "FOTOGRAM",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            OutlinedTextField(
+                value = nomeUtente,
+                onValueChange = viewModel::aggiornaNomeUtente,
+                label = {
+                    Text("Username")
+                },
+                supportingText = {
+                    Text("${nomeUtente.length}/15 caratteri")
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            if (registrazioneTentata && erroreNomeUtente != null) {
+                Text(
+                    text = erroreNomeUtente,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
-        )
 
-        if (registrazioneTentata && erroreImmagineProfilo != null) {
-            Text(
-                text = erroreImmagineProfilo,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.fillMaxWidth()
+            BoxImmagineProfiloRegistrazione(
+                immagineProfiloSelezionata = immagineProfiloSelezionata,
+                anteprimaImmagineProfilo = anteprimaImmagineProfilo,
+                onClick = {
+                    launcherImmagineProfilo.launch("image/*")
+                }
             )
-        }
 
-        if (
-            messaggioErrore != null &&
-            messaggioErrore != erroreNomeUtente &&
-            messaggioErrore != erroreImmagineProfilo
-        ) {
-            Text(
-                text = messaggioErrore,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
+            if (registrazioneTentata && erroreImmagineProfilo != null) {
+                Text(
+                    text = erroreImmagineProfilo,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            if (!connesso || erroreConnessione) {
+                Text(
+                    text = "Serve una connessione per completare la registrazione.",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else if (
+                messaggioErrore != null &&
+                messaggioErrore != erroreNomeUtente &&
+                messaggioErrore != erroreImmagineProfilo
+            ) {
+                Text(
+                    text = "Impossibile completare la registrazione. Riprova.",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Button(
+                onClick = {
+                    registrazioneTentata = true
+
+                    if (connesso) {
+                        viewModel.completaRegistrazione()
+                    }
+                },
+                enabled = !caricamento,
                 modifier = Modifier.fillMaxWidth()
-            )
-        }
-
-        Button(
-            onClick = {
-                registrazioneTentata = true
-                viewModel.completaRegistrazione()
-            },
-            enabled = !caricamento,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            if (caricamento) {
-                Text("Registrazione...")
-            } else {
-                Text("Completa registrazione")
+            ) {
+                if (caricamento && connesso && !erroreConnessione) {
+                    Text("Registrazione...")
+                } else {
+                    Text("Completa registrazione")
+                }
             }
         }
     }

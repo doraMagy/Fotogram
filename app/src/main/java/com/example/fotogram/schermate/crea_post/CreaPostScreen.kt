@@ -262,11 +262,11 @@ fun CreaPostScreen(
             Button(
                 onClick = {
                     pubblicazioneTentata = true
-                    if (connesso && !erroreConnessione){
+                    if (connesso){
                         viewModel.pubblicaPost()
                     }
                 },
-                enabled = connesso && !caricamento && !erroreConnessione,
+                enabled = connesso && !caricamento,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (caricamento) {

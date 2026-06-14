@@ -216,18 +216,14 @@ fun ModificaProfiloScreen(
 
             Button(
                 onClick = {
-                    if (connesso && !erroreConnessione) {
+                    if (connesso) {
                         viewModel.salvaProfilo()
                     }
                 },
-                enabled = connesso && datiValidi && !erroreConnessione,
+                enabled = connesso && datiValidi,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                if (caricamento) {
-                    Text("Salvataggio...")
-                } else {
-                    Text("Salva")
-                }
+                Text("Salva")
             }
         }
     }
