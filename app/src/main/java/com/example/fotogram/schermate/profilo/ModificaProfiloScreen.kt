@@ -34,6 +34,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import com.example.fotogram.util.base64ToImageBitmap
 import com.example.fotogram.util.uriToBase64ConLimite
+import com.example.fotogram.util.OfflineBanner
+import com.example.fotogram.util.rememberStatoConnessione
 
 @Composable
 fun ModificaProfiloScreen(
@@ -90,6 +92,12 @@ fun ModificaProfiloScreen(
         base64ToImageBitmap(immagineDaMostrare)
     }
 
+    val connesso = rememberStatoConnessione()
+    val erroreConnessione = messaggioErrore?.contains("timeout", ignoreCase = true) == true ||
+            messaggioErrore?.contains("Unable to resolve host", ignoreCase = true) == true ||
+            messaggioErrore?.contains("Failed to connect", ignoreCase = true) == true ||
+            messaggioErrore?.contains("connection", ignoreCase = true) == true
+
     LaunchedEffect(Unit) {
         viewModel.caricaProfilo()
     }
@@ -101,115 +109,125 @@ fun ModificaProfiloScreen(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(
-            space = 16.dp,
-            alignment = Alignment.CenterVertically
-        ),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier.fillMaxSize()
     ) {
-        Text(
-            text = "Immagine profilo",
-            style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Box(
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.secondaryContainer)
-                .clickable {
-                    launcherImmagineProfilo.launch("image/*")
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            if (anteprimaImmagineProfilo != null) {
-                Image(
-                    bitmap = anteprimaImmagineProfilo,
-                    contentDescription = "Immagine profilo",
-                    modifier = Modifier.size(120.dp),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Text("IMG")
-            }
+        if (!connesso || erroreConnessione) {
+            OfflineBanner()
         }
 
-        Text(
-            text = "Tocca l'immagine per cambiarla",
-            style = MaterialTheme.typography.bodySmall
-        )
-
-        OutlinedTextField(
-            value = nomeUtente,
-            onValueChange = viewModel::aggiornaNomeUtente,
-            label = {
-                Text("Nome utente")
-            },
-            supportingText = {
-                Text("${nomeUtente.length}/15 caratteri")
-            },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        OutlinedTextField(
-            value = bio,
-            onValueChange = viewModel::aggiornaBio,
-            label = {
-                Text("Biografia")
-            },
-            supportingText = {
-                Text("${bio.length}/100 caratteri")
-            },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 3,
-            maxLines = 4
-        )
-
-        OutlinedTextField(
-            value = dataNascita,
-            onValueChange = viewModel::aggiornaDataNascita,
-            label = {
-                Text("Data di nascita")
-            },
-            placeholder = {
-                Text("yyyy-MM-dd")
-            },
-            supportingText = {
-                if (!dataNascitaValida) {
-                    Text("Inserisci una data valida nel formato yyyy-MM-dd")
-                } else {
-                    Text("Formato: yyyy-MM-dd")
-                }
-            },
-            isError = !dataNascitaValida,
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        if (messaggioErrore != null) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(
+                space = 16.dp,
+                alignment = Alignment.CenterVertically
+            ),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(
-                text = messaggioErrore,
-                color = MaterialTheme.colorScheme.error,
+                text = "Immagine profilo",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
+                    .clickable {
+                        launcherImmagineProfilo.launch("image/*")
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                if (anteprimaImmagineProfilo != null) {
+                    Image(
+                        bitmap = anteprimaImmagineProfilo,
+                        contentDescription = "Immagine profilo",
+                        modifier = Modifier.size(120.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text("IMG")
+                }
+            }
+
+            Text(
+                text = "Tocca l'immagine per cambiarla",
                 style = MaterialTheme.typography.bodySmall
             )
-        }
 
-        Button(
-            onClick = {
-                viewModel.salvaProfilo()
-            },
-            enabled = datiValidi,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            if (caricamento) {
-                Text("Salvataggio...")
-            } else {
-                Text("Salva")
+            OutlinedTextField(
+                value = nomeUtente,
+                onValueChange = viewModel::aggiornaNomeUtente,
+                label = {
+                    Text("Nome utente")
+                },
+                supportingText = {
+                    Text("${nomeUtente.length}/15 caratteri")
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            OutlinedTextField(
+                value = bio,
+                onValueChange = viewModel::aggiornaBio,
+                label = {
+                    Text("Biografia")
+                },
+                supportingText = {
+                    Text("${bio.length}/100 caratteri")
+                },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3,
+                maxLines = 4
+            )
+
+            OutlinedTextField(
+                value = dataNascita,
+                onValueChange = viewModel::aggiornaDataNascita,
+                label = {
+                    Text("Data di nascita")
+                },
+                placeholder = {
+                    Text("yyyy-MM-dd")
+                },
+                supportingText = {
+                    if (!dataNascitaValida) {
+                        Text("Inserisci una data valida nel formato yyyy-MM-dd")
+                    } else {
+                        Text("Formato: yyyy-MM-dd")
+                    }
+                },
+                isError = !dataNascitaValida,
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            if (!connesso || erroreConnessione || messaggioErrore != null) {
+                Text(
+                    text = "impossibile salvare le modifiche senza connessione",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            Button(
+                onClick = {
+                    if (connesso && !erroreConnessione) {
+                        viewModel.salvaProfilo()
+                    }
+                },
+                enabled = connesso && datiValidi && !erroreConnessione,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (caricamento) {
+                    Text("Salvataggio...")
+                } else {
+                    Text("Salva")
+                }
             }
         }
     }

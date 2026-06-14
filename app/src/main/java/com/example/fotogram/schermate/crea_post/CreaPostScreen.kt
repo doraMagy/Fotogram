@@ -36,6 +36,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.remember
 import androidx.compose.ui.layout.ContentScale
 import com.example.fotogram.util.base64ToImageBitmap
@@ -43,6 +44,8 @@ import com.example.fotogram.util.uriToBase64ConLimite
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.example.fotogram.util.OfflineBanner
+import com.example.fotogram.util.rememberStatoConnessione
 
 @Composable
 fun CreaPostScreen(
@@ -90,7 +93,6 @@ fun CreaPostScreen(
     val testoPost = viewModel.testoPost
     val immagineSelezionata = viewModel.immagineSelezionata
     val posizioneSelezionata = viewModel.posizioneSelezionata
-    val pubblicazionePossibile = viewModel.pubblicazionePossibile
     val postPubblicato = viewModel.postPubblicato
     val messaggioErrore = viewModel.messaggioErrore
     val caricamento = viewModel.caricamento
@@ -99,6 +101,11 @@ fun CreaPostScreen(
     val erroreTesto = viewModel.erroreTesto
     val latitudine = viewModel.latitudine
     val longitudine = viewModel.longitudine
+    val connesso = rememberStatoConnessione()
+    val erroreConnessione = messaggioErrore?.contains("timeout", ignoreCase = true) == true ||
+            messaggioErrore?.contains("Unable to resolve host", ignoreCase = true) == true ||
+            messaggioErrore?.contains("Failed to connect", ignoreCase = true) == true ||
+            messaggioErrore?.contains("connection", ignoreCase = true) == true
 
     val anteprimaImmagine = remember(immagineBase64) {
         base64ToImageBitmap(immagineBase64)
@@ -124,132 +131,149 @@ fun CreaPostScreen(
     var pubblicazioneTentata by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = Modifier.fillMaxSize()
     ) {
-        Text(
-            text = "Immagine del post",
-            style = MaterialTheme.typography.titleSmall
-        )
-
-        BoxImmaginePost(
-            immagineSelezionata = immagineSelezionata,
-            anteprimaImmagine = anteprimaImmagine,
-            onClick = {
-                launcherImmagine.launch("image/*")
-            }
-        )
-
-        if (pubblicazioneTentata && erroreImmagine != null) {
-            Text(
-                text = erroreImmagine,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
+        if (!connesso || erroreConnessione) {
+            OfflineBanner()
         }
 
-        Text(
-            text = "Descrizione",
-            style = MaterialTheme.typography.titleSmall
-        )
-
-        OutlinedTextField(
-            value = testoPost,
-            onValueChange = viewModel::aggiornaTestoPost,
-            label = {
-                Text("Testo del post")
-            },
-            placeholder = {
-                Text("Scrivi un messaggio...")
-            },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 2,
-            maxLines = 3
-        )
-
-        Text(
-            text = "${testoPost.length}/100 caratteri",
-            style = MaterialTheme.typography.bodySmall
-        )
-
-        if (pubblicazioneTentata && erroreTesto != null) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             Text(
-                text = erroreTesto,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
+                text = "Immagine del post",
+                style = MaterialTheme.typography.titleSmall
             )
-        }
 
-        Text(
-            text = "Posizione (facoltativo)",
-            style = MaterialTheme.typography.titleSmall
-        )
-
-        if (!posizioneSelezionata) {
-            OutlinedButton(
+            BoxImmaginePost(
+                immagineSelezionata = immagineSelezionata,
+                anteprimaImmagine = anteprimaImmagine,
                 onClick = {
-                    onSelezionaPosizione()
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Aggiungi posizione")
-            }
-        } else {
-            Text(
-                text = "Latitudine: ${latitudine ?: "-"}, Longitudine: ${longitudine ?: "-"}",
-                style = MaterialTheme.typography.bodyMedium
+                    launcherImmagine.launch("image/*")
+                }
             )
 
-            Row(
+            if (pubblicazioneTentata && erroreImmagine != null) {
+                Text(
+                    text = erroreImmagine,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            Text(
+                text = "Descrizione",
+                style = MaterialTheme.typography.titleSmall
+            )
+
+            OutlinedTextField(
+                value = testoPost,
+                onValueChange = viewModel::aggiornaTestoPost,
+                label = {
+                    Text("Testo del post")
+                },
+                placeholder = {
+                    Text("Scrivi un messaggio...")
+                },
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+                minLines = 2,
+                maxLines = 3
+            )
+
+            Text(
+                text = "${testoPost.length}/100 caratteri",
+                style = MaterialTheme.typography.bodySmall
+            )
+
+            if (pubblicazioneTentata && erroreTesto != null) {
+                Text(
+                    text = erroreTesto,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            Text(
+                text = "Posizione (facoltativo)",
+                style = MaterialTheme.typography.titleSmall
+            )
+
+            if (!posizioneSelezionata) {
                 OutlinedButton(
                     onClick = {
                         onSelezionaPosizione()
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Modifica")
+                    Text("Aggiungi posizione")
                 }
+            } else {
+                Text(
+                    text = "Latitudine: ${latitudine ?: "-"}, Longitudine: ${longitudine ?: "-"}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
 
-                OutlinedButton(
-                    onClick = {
-                        viewModel.rimuoviPosizione()
-                    },
-                    modifier = Modifier.weight(1f)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Rimuovi")
+                    OutlinedButton(
+                        onClick = {
+                            onSelezionaPosizione()
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Modifica")
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            viewModel.rimuoviPosizione()
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Rimuovi")
+                    }
                 }
             }
-        }
 
-        Spacer(
-            modifier = Modifier.height(8.dp)
-        )
-
-        if (messaggioErrore != null) {
-            Text(
-                text = messaggioErrore,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
+            Spacer(
+                modifier = Modifier.height(8.dp)
             )
-        }
 
-        Button(
-            onClick = {
-                pubblicazioneTentata = true
-                viewModel.pubblicaPost()
-            },
-            enabled = !caricamento,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            if (caricamento) {
-                Text("Pubblicazione...")
-            } else {
-                Text("Pubblica")
+            if (!connesso || erroreConnessione) {
+                Text(
+                    text = "Serve una connessione per pubblicare il post.",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            } else if (messaggioErrore != null) {
+                Text(
+                    text = "Impossibile pubblicare il post.",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            Button(
+                onClick = {
+                    pubblicazioneTentata = true
+                    if (connesso && !erroreConnessione){
+                        viewModel.pubblicaPost()
+                    }
+                },
+                enabled = connesso && !caricamento && !erroreConnessione,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (caricamento) {
+                    Text("Pubblicazione...")
+                } else {
+                    Text("Pubblica")
+                }
             }
         }
     }

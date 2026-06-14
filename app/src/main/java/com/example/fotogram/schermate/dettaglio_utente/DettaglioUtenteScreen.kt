@@ -40,8 +40,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.layout.ContentScale
 import com.example.fotogram.util.base64ToImageBitmap
+import com.example.fotogram.util.OfflineBanner
+import com.example.fotogram.util.rememberStatoConnessione
 
 @Composable
 fun DettaglioUtenteScreen(
@@ -79,6 +82,12 @@ fun DettaglioUtenteScreen(
 
     val caricamentoAltriPost = viewModel.caricamentoAltriPost
 
+    val connesso = rememberStatoConnessione()
+    val erroreConnessione = messaggioErrore?.contains("timeout", ignoreCase = true) == true ||
+            messaggioErrore?.contains("Unable to resolve host", ignoreCase = true) == true ||
+            messaggioErrore?.contains("Failed to connect", ignoreCase = true) == true ||
+            messaggioErrore?.contains("connection", ignoreCase = true) == true
+
     val listState = rememberLazyListState()
 
     val vicinoAlFondo = remember {
@@ -94,8 +103,8 @@ fun DettaglioUtenteScreen(
         viewModel.caricaUtente(idUtente)
     }
 
-    LaunchedEffect(vicinoAlFondo.value) {
-        if (vicinoAlFondo.value) {
+    LaunchedEffect(vicinoAlFondo.value, connesso) {
+        if (connesso && vicinoAlFondo.value) {
             viewModel.caricaAltriPost()
         }
     }
@@ -110,71 +119,82 @@ fun DettaglioUtenteScreen(
         }
     }
 
-    LazyColumn(
-        state = listState,
-        contentPadding = PaddingValues(
-            top = 16.dp,
-            bottom = 24.dp
-        ),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        if (caricamento) {
-            item {
-                Text(
-                    text = "Caricamento utente...",
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
+        if (!connesso || erroreConnessione) {
+            OfflineBanner()
         }
 
-        if (messaggioErrore != null) {
-            item {
-                Text(
-                    text = messaggioErrore,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-        }
-
-        item {
-            IntestazioneDettaglioUtente(
-                utente = utente,
-                seguito = seguito,
-                onCambiaFollow = {
-                    viewModel.cambiaFollow(idUtente)
+        LazyColumn(
+            state = listState,
+            contentPadding = PaddingValues(
+                top = 16.dp,
+                bottom = 24.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            if (caricamento) {
+                item {
+                    Text(
+                        text = "Caricamento utente...",
+                        modifier = Modifier.padding(16.dp)
+                    )
                 }
-            )
-        }
+            }
 
-        item {
-            Text(
-                text = "Post di ${utente.nomeUtente}",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-        }
+            if (messaggioErrore != null && postUtente.isEmpty() && utente.nomeUtente.isBlank()) {
+                item {
+                    Text(
+                        text = "Impossibile caricare l'utente",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
 
-        items(postUtente) { post ->
-            SchedaPost(
-                post = post,
-                onApriDettaglioUtente = {
-                    // Siamo già nel dettaglio di questo utente.
-                },
-                onApriImmaginePost = onApriImmaginePost,
-                onApriMappaPost = onApriMappaPost,
-                mostraAutoreCliccabile = false,
-                mostraBadge = false
-            )
-        }
-
-        if (caricamentoAltriPost) {
             item {
-                Text(
-                    text = "Caricamento altri post...",
-                    modifier = Modifier.padding(16.dp)
+                IntestazioneDettaglioUtente(
+                    utente = utente,
+                    seguito = seguito,
+                    connesso = connesso,
+                    onCambiaFollow = {
+                        viewModel.cambiaFollow(idUtente)
+                    }
                 )
             }
+
+            item {
+                Text(
+                    text = "Post di ${utente.nomeUtente}",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+
+            items(postUtente) { post ->
+                SchedaPost(
+                    post = post,
+                    onApriDettaglioUtente = {
+                        // Siamo già nel dettaglio di questo utente.
+                    },
+                    onApriImmaginePost = onApriImmaginePost,
+                    onApriMappaPost = onApriMappaPost,
+                    mostraAutoreCliccabile = false,
+                    mostraBadge = false
+                )
+            }
+
+            if (caricamentoAltriPost) {
+                item {
+                    Text(
+                        text = "Caricamento altri post...",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+
         }
     }
 }
@@ -183,6 +203,7 @@ fun DettaglioUtenteScreen(
 fun IntestazioneDettaglioUtente(
     utente: Utente,
     seguito: Boolean,
+    connesso: Boolean,
     onCambiaFollow: () -> Unit
 ) {
     val immagineProfilo = remember(utente.immagineProfiloBase64) {
@@ -280,6 +301,7 @@ fun IntestazioneDettaglioUtente(
         if (seguito) {
             OutlinedButton(
                 onClick = onCambiaFollow,
+                enabled = connesso,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Smetti di seguire")
@@ -287,6 +309,7 @@ fun IntestazioneDettaglioUtente(
         } else {
             Button(
                 onClick = onCambiaFollow,
+                enabled = connesso,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Segui")

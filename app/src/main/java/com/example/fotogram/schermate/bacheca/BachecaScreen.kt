@@ -1,6 +1,7 @@
 package com.example.fotogram.schermate.bacheca
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,8 @@ import com.example.fotogram.sessione.SessioneManager
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import com.example.fotogram.database.AppDatabase
+import com.example.fotogram.util.rememberStatoConnessione
+import com.example.fotogram.util.OfflineBanner
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +61,11 @@ fun BachecaScreen(
     val caricamentoAltriPost = viewModel.caricamentoAltriPost
     val fineFeed = viewModel.fineFeed
     val messaggioErrore = viewModel.messaggioErrore
+    val connesso = rememberStatoConnessione()
+    val erroreConnessione = messaggioErrore?.contains("timeout", ignoreCase = true) == true ||
+            messaggioErrore?.contains("Unable to resolve host", ignoreCase = true) == true ||
+            messaggioErrore?.contains("Failed to connect", ignoreCase = true) == true ||
+            messaggioErrore?.contains("connection", ignoreCase = true) == true
 
     val listState = rememberLazyListState()
 
@@ -74,8 +82,8 @@ fun BachecaScreen(
         viewModel.caricaBacheca()
     }
 
-    LaunchedEffect(vicinoAlFondo.value) {
-        if (vicinoAlFondo.value) {
+    LaunchedEffect(vicinoAlFondo.value, connesso) {
+        if (connesso && vicinoAlFondo.value) {
             viewModel.caricaAltriPost()
         }
     }
@@ -91,77 +99,88 @@ fun BachecaScreen(
         }
     }
 
-    PullToRefreshBox(
-        isRefreshing = aggiornamento,
-        onRefresh = {
-            viewModel.aggiornaBacheca()
-        },
+    Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        LazyColumn(
-            state = listState,
-            contentPadding = PaddingValues(
-                vertical = 8.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.fillMaxSize()
+        if (!connesso || erroreConnessione) {
+            OfflineBanner()
+        }
+
+        PullToRefreshBox(
+            isRefreshing = aggiornamento,
+            onRefresh = {
+                viewModel.aggiornaBacheca()
+            },
+            modifier = Modifier.weight(1f)
         ) {
-            if (caricamento) {
-                item {
-                    Text(
-                        text = "Caricamento bacheca...",
-                        modifier = Modifier.padding(16.dp)
+            LazyColumn(
+                state = listState,
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp,
+                    bottom = 24.dp
+                    //vertical = 8.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                if (caricamento) {
+                    item {
+                        Text(
+                            text = "Caricamento bacheca...",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+
+                if (messaggioErrore != null && postBacheca.isEmpty()) {
+                    item {
+                        Text(
+                            text = "Impossibile caricare la bacheca.",
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+
+                if (!caricamento && messaggioErrore == null && postBacheca.isEmpty()) {
+                    item {
+                        Text(
+                            text = "Nessun post disponibile.",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+
+                items(
+                    items = postBacheca,
+                    key = { post -> post.idPost }
+                ) { post ->
+                    SchedaPost(
+                        post = post,
+                        onApriDettaglioUtente = onApriDettaglioUtente,
+                        onApriImmaginePost = onApriImmaginePost,
+                        onApriMappaPost = onApriMappaPost
                     )
                 }
-            }
 
-            if (messaggioErrore != null) {
-                item {
-                    Text(
-                        text = messaggioErrore,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(16.dp)
-                    )
+                if (caricamentoAltriPost) {
+                    item {
+                        Text(
+                            text = "Caricamento altri post...",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
-            }
 
-            if (!caricamento && messaggioErrore == null && postBacheca.isEmpty()) {
-                item {
-                    Text(
-                        text = "Nessun post disponibile.",
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-            }
-
-            items(
-                items = postBacheca,
-                key = { post -> post.idPost }
-            ) { post ->
-                SchedaPost(
-                    post = post,
-                    onApriDettaglioUtente = onApriDettaglioUtente,
-                    onApriImmaginePost = onApriImmaginePost,
-                    onApriMappaPost = onApriMappaPost
-                )
-            }
-
-            if (caricamentoAltriPost) {
-                item {
-                    Text(
-                        text = "Caricamento altri post...",
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-            }
-
-            if (fineFeed && postBacheca.isNotEmpty()) {
-                item {
-                    Text(
-                        text = "Hai visto tutti i post disponibili.",
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                if (fineFeed && postBacheca.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "Hai visto tutti i post disponibili.",
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
             }
         }

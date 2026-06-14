@@ -42,8 +42,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.layout.ContentScale
 import com.example.fotogram.util.base64ToImageBitmap
+import com.example.fotogram.util.OfflineBanner
+import com.example.fotogram.util.rememberStatoConnessione
 
 @Composable
 fun ProfiloScreen(
@@ -75,9 +78,14 @@ fun ProfiloScreen(
     val postPersonali = viewModel.postPersonali
     val caricamento = viewModel.caricamento
     val messaggioErrore = viewModel.messaggioErrore
-
     val caricamentoAltriPost = viewModel.caricamentoAltriPost
     val finePost = viewModel.finePost
+    val connesso = rememberStatoConnessione()
+    val erroreConnessione = messaggioErrore?.contains("timeout", ignoreCase = true) == true ||
+            messaggioErrore?.contains("Unable to resolve host", ignoreCase = true) == true ||
+            messaggioErrore?.contains("Failed to connect", ignoreCase = true) == true ||
+            messaggioErrore?.contains("connection", ignoreCase = true) == true
+
 
     val listState = rememberLazyListState()
 
@@ -94,87 +102,97 @@ fun ProfiloScreen(
         viewModel.caricaProfilo()
     }
 
-    LaunchedEffect(vicinoAlFondo.value) {
-        if (vicinoAlFondo.value) {
+    LaunchedEffect(vicinoAlFondo.value, connesso) {
+        if (connesso && vicinoAlFondo.value) {
             viewModel.caricaAltriPost()
         }
     }
 
-    LazyColumn(
-        state = listState,
-        contentPadding = PaddingValues(
-            start = 16.dp,
-            end = 16.dp,
-            top = 16.dp,
-            bottom = 24.dp
-        ),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        if (caricamento) {
+        if (!connesso || erroreConnessione) {
+            OfflineBanner()
+        }
+
+        LazyColumn(
+            state = listState,
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = 16.dp,
+                bottom = 24.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            if (caricamento) {
+                item {
+                    Text(
+                        text = "Caricamento profilo...",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+
+            if (messaggioErrore != null && utente.nomeUtente.isBlank()  && postPersonali.isEmpty()) {
+                item {
+                    Text(
+                        text = "Impossibile caricare il profilo",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+
             item {
-                Text(
-                    text = "Caricamento profilo...",
-                    modifier = Modifier.padding(16.dp)
+                IntestazioneProfilo(
+                    utente = utente,
+                    onModificaProfilo = onModificaProfilo
                 )
             }
-        }
 
-        if (messaggioErrore != null) {
             item {
                 Text(
-                    text = messaggioErrore,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(16.dp)
+                    text = "I tuoi post",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(top = 8.dp)
                 )
             }
-        }
 
-        item {
-            IntestazioneProfilo(
-                utente = utente,
-                onModificaProfilo = onModificaProfilo
-            )
-        }
+            if (!caricamento && postPersonali.isEmpty()) {
+                item {
+                    Text(
+                        text = "Non hai ancora pubblicato post.",
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
 
-        item {
-            Text(
-                text = "I tuoi post",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-        }
-
-        if (!caricamento && postPersonali.isEmpty()) {
-            item {
-                Text(
-                    text = "Non hai ancora pubblicato post.",
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center
+            items(postPersonali) { post ->
+                SchedaPost(
+                    post = post,
+                    onApriDettaglioUtente = {
+                        // Nel profilo personale non serve aprire il dettaglio utente.
+                    },
+                    onApriImmaginePost = onApriImmaginePost,
+                    onApriMappaPost = onApriMappaPost,
+                    mostraAutoreCliccabile = false,
+                    mostraBadge = false
                 )
             }
-        }
 
-        items(postPersonali) { post ->
-            SchedaPost(
-                post = post,
-                onApriDettaglioUtente = {
-                    // Nel profilo personale non serve aprire il dettaglio utente.
-                },
-                onApriImmaginePost = onApriImmaginePost,
-                onApriMappaPost = onApriMappaPost,
-                mostraAutoreCliccabile = false,
-                mostraBadge = false
-            )
-        }
-
-        if (caricamentoAltriPost) {
-            item {
-                Text(
-                    text = "Caricamento altri post...",
-                    modifier = Modifier.padding(16.dp)
-                )
+            if (caricamentoAltriPost) {
+                item {
+                    Text(
+                        text = "Caricamento altri post...",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
+
         }
     }
 }
