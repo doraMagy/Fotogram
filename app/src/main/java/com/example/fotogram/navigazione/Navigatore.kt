@@ -17,6 +17,7 @@ class Navigatore(
             }
         }
     }
+    //popUpTo() = pulisce una parte dello stack, "rimuovi tutto fino ad avvio compreso"
 
     fun vaiACreaPost() {
         navController.navigate(Schermata.CreaPost.route)
@@ -54,6 +55,7 @@ class Navigatore(
 
     fun tornaIndietro() {
         navController.popBackStack()
+        //rimuove la schermata corrente e torna alla precedente
     }
 }
 

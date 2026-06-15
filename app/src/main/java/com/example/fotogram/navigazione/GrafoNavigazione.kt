@@ -120,6 +120,7 @@ fun GrafoNavigazione() {
                 val seguitoAggiornato = bachecaBackStackEntry
                     .savedStateHandle
                     .get<Boolean>("seguitoAggiornato")
+                //controlla se qualcuno ha lasciato un val chiamato "seguitoAgg"
 
                 BachecaScreen(
                     onApriDettaglioUtente = navigatore::vaiADettaglioUtente,
@@ -131,6 +132,7 @@ fun GrafoNavigazione() {
                         bachecaBackStackEntry.savedStateHandle.remove<Int>("idAutoreFollowAggiornato")
                         bachecaBackStackEntry.savedStateHandle.remove<Boolean>("seguitoAggiornato")
                     }
+                    //quando la bacheca ha finito di usare queste info vengono cancellate.
                 )
             }
 
@@ -188,6 +190,7 @@ fun GrafoNavigazione() {
                             ?.savedStateHandle
                             ?.set("seguitoAggiornato", seguito)
                     }
+                    //prende la schermata precedente e salva nel suo savedStateHandle i valori.
                 )
             }
 
