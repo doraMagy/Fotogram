@@ -7,5 +7,11 @@ data class Utente(
     val numeroFollower: Int,
     val numeroFollowing: Int,
     val numeroPost: Int,
-    val immagineProfiloBase64: String? = null
+    val immagineProfiloBase64: String? = null,
+
+    // Campi aggiunti da UserResponse
+    val idUtente: Int = 0,
+    val dataCreazione: String = "",
+    val tiSegue: Boolean = false,
+    val seguitoDaTe: Boolean = false
 )

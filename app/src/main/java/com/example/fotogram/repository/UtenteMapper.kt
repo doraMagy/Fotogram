@@ -12,6 +12,17 @@ fun UserResponse.toUtente(): Utente {
         numeroFollower = followersCount,
         numeroFollowing = followingCount,
         numeroPost = postsCount,
-        immagineProfiloBase64 = profilePicture
+        immagineProfiloBase64 = profilePicture,
+
+        idUtente = id,
+        dataCreazione = createdAt ?: "",
+        tiSegue = isYourFollower,
+        seguitoDaTe = isYourFollowing
     )
 }
+
+/*
+UserResponse = dati grezzi ricevuti dal server
+Utente = model interno completo usato dall’app
+toUtente() = punto unico dove trasformi e pulisci i dati
+*/
